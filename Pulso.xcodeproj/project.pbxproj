@@ -1,0 +1,596 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B10000000000000000000001 /* PulsoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000001 /* PulsoApp.swift */; };
+		B10000000000000000000002 /* AppServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000002 /* AppServices.swift */; };
+		B10000000000000000000003 /* SampleDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000003 /* SampleDTO.swift */; };
+		B10000000000000000000004 /* Wire.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000004 /* Wire.swift */; };
+		B10000000000000000000005 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000005 /* AppSettings.swift */; };
+		B10000000000000000000006 /* AppStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000006 /* AppStatus.swift */; };
+		B10000000000000000000007 /* TypeRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000007 /* TypeRegistry.swift */; };
+		B10000000000000000000008 /* Serializers.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000008 /* Serializers.swift */; };
+		B10000000000000000000009 /* WorkoutActivityName.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000009 /* WorkoutActivityName.swift */; };
+		B1000000000000000000000A /* AnchorStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000A /* AnchorStore.swift */; };
+		B1000000000000000000000B /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000B /* SyncEngine.swift */; };
+		B1000000000000000000000C /* Outbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000C /* Outbox.swift */; };
+		B1000000000000000000000D /* Uploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000D /* Uploader.swift */; };
+		B1000000000000000000000E /* TriggerHub.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000E /* TriggerHub.swift */; };
+		B1000000000000000000000F /* Gzip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000F /* Gzip.swift */; };
+		B10000000000000000000010 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000010 /* Keychain.swift */; };
+		B10000000000000000000011 /* LogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000011 /* LogStore.swift */; };
+		B10000000000000000000012 /* Iso8601.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000012 /* Iso8601.swift */; };
+		B10000000000000000000013 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000013 /* RootView.swift */; };
+		B10000000000000000000014 /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000014 /* StatusView.swift */; };
+		B10000000000000000000015 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000015 /* SettingsView.swift */; };
+		B10000000000000000000016 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000016 /* LogView.swift */; };
+		B10000000000000000000017 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000017 /* Assets.xcassets */; };
+		B1000000000000000000001C /* SerializerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001C /* SerializerTests.swift */; };
+		B1000000000000000000001D /* OutboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001D /* OutboxTests.swift */; };
+		B1000000000000000000001E /* GzipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001E /* GzipTests.swift */; };
+		B1000000000000000000001F /* AnchorStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000001F /* AnchorStoreTests.swift */; };
+		B10000000000000000000020 /* WireFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000020 /* WireFormatTests.swift */; };
+		B10000000000000000000021 /* TestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000021 /* TestSupport.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C10000000000000000000012 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C10000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C10000000000000000000002;
+			remoteInfo = Pulso;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F10000000000000000000001 /* PulsoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PulsoApp.swift; sourceTree = "<group>"; };
+		F10000000000000000000002 /* AppServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppServices.swift; sourceTree = "<group>"; };
+		F10000000000000000000003 /* SampleDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDTO.swift; sourceTree = "<group>"; };
+		F10000000000000000000004 /* Wire.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Wire.swift; sourceTree = "<group>"; };
+		F10000000000000000000005 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		F10000000000000000000006 /* AppStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStatus.swift; sourceTree = "<group>"; };
+		F10000000000000000000007 /* TypeRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeRegistry.swift; sourceTree = "<group>"; };
+		F10000000000000000000008 /* Serializers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Serializers.swift; sourceTree = "<group>"; };
+		F10000000000000000000009 /* WorkoutActivityName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutActivityName.swift; sourceTree = "<group>"; };
+		F1000000000000000000000A /* AnchorStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorStore.swift; sourceTree = "<group>"; };
+		F1000000000000000000000B /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
+		F1000000000000000000000C /* Outbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Outbox.swift; sourceTree = "<group>"; };
+		F1000000000000000000000D /* Uploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Uploader.swift; sourceTree = "<group>"; };
+		F1000000000000000000000E /* TriggerHub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TriggerHub.swift; sourceTree = "<group>"; };
+		F1000000000000000000000F /* Gzip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Gzip.swift; sourceTree = "<group>"; };
+		F10000000000000000000010 /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
+		F10000000000000000000011 /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
+		F10000000000000000000012 /* Iso8601.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Iso8601.swift; sourceTree = "<group>"; };
+		F10000000000000000000013 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		F10000000000000000000014 /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
+		F10000000000000000000015 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F10000000000000000000016 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		F10000000000000000000017 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F10000000000000000000018 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F10000000000000000000019 /* Pulso.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Pulso.entitlements; sourceTree = "<group>"; };
+		F1000000000000000000001A /* Pulso.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pulso.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1000000000000000000001B /* PulsoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PulsoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F1000000000000000000001C /* SerializerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerializerTests.swift; sourceTree = "<group>"; };
+		F1000000000000000000001D /* OutboxTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutboxTests.swift; sourceTree = "<group>"; };
+		F1000000000000000000001E /* GzipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GzipTests.swift; sourceTree = "<group>"; };
+		F1000000000000000000001F /* AnchorStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnchorStoreTests.swift; sourceTree = "<group>"; };
+		F10000000000000000000020 /* WireFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireFormatTests.swift; sourceTree = "<group>"; };
+		F10000000000000000000021 /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSupport.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C10000000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C10000000000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000002 /* Pulso */,
+				A10000000000000000000009 /* PulsoTests */,
+				A1000000000000000000000A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A10000000000000000000002 /* Pulso */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000003 /* App */,
+				A10000000000000000000004 /* Model */,
+				A10000000000000000000005 /* Health */,
+				A10000000000000000000006 /* Sync */,
+				A10000000000000000000007 /* Support */,
+				A10000000000000000000008 /* UI */,
+				F10000000000000000000017 /* Assets.xcassets */,
+				F10000000000000000000018 /* Info.plist */,
+				F10000000000000000000019 /* Pulso.entitlements */,
+			);
+			path = Pulso;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000003 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				F10000000000000000000001 /* PulsoApp.swift */,
+				F10000000000000000000002 /* AppServices.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000004 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				F10000000000000000000003 /* SampleDTO.swift */,
+				F10000000000000000000004 /* Wire.swift */,
+				F10000000000000000000005 /* AppSettings.swift */,
+				F10000000000000000000006 /* AppStatus.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000005 /* Health */ = {
+			isa = PBXGroup;
+			children = (
+				F10000000000000000000007 /* TypeRegistry.swift */,
+				F10000000000000000000008 /* Serializers.swift */,
+				F10000000000000000000009 /* WorkoutActivityName.swift */,
+				F1000000000000000000000A /* AnchorStore.swift */,
+			);
+			path = Health;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000006 /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				F1000000000000000000000B /* SyncEngine.swift */,
+				F1000000000000000000000C /* Outbox.swift */,
+				F1000000000000000000000D /* Uploader.swift */,
+				F1000000000000000000000E /* TriggerHub.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000007 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				F1000000000000000000000F /* Gzip.swift */,
+				F10000000000000000000010 /* Keychain.swift */,
+				F10000000000000000000011 /* LogStore.swift */,
+				F10000000000000000000012 /* Iso8601.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000008 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				F10000000000000000000013 /* RootView.swift */,
+				F10000000000000000000014 /* StatusView.swift */,
+				F10000000000000000000015 /* SettingsView.swift */,
+				F10000000000000000000016 /* LogView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000009 /* PulsoTests */ = {
+			isa = PBXGroup;
+			children = (
+				F1000000000000000000001C /* SerializerTests.swift */,
+				F1000000000000000000001D /* OutboxTests.swift */,
+				F1000000000000000000001E /* GzipTests.swift */,
+				F1000000000000000000001F /* AnchorStoreTests.swift */,
+				F10000000000000000000020 /* WireFormatTests.swift */,
+				F10000000000000000000021 /* TestSupport.swift */,
+			);
+			path = PulsoTests;
+			sourceTree = "<group>";
+		};
+		A1000000000000000000000A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F1000000000000000000001A /* Pulso.app */,
+				F1000000000000000000001B /* PulsoTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C10000000000000000000002 /* Pulso */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1000000000000000000000C /* Build configuration list for PBXNativeTarget "Pulso" */;
+			buildPhases = (
+				C10000000000000000000004 /* Sources */,
+				C10000000000000000000005 /* Frameworks */,
+				C10000000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Pulso;
+			productName = Pulso;
+			productReference = F1000000000000000000001A /* Pulso.app */;
+			productType = "com.apple.product-type.application";
+		};
+		C10000000000000000000003 /* PulsoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C1000000000000000000000F /* Build configuration list for PBXNativeTarget "PulsoTests" */;
+			buildPhases = (
+				C10000000000000000000007 /* Sources */,
+				C10000000000000000000008 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C10000000000000000000013 /* PBXTargetDependency */,
+			);
+			name = PulsoTests;
+			productName = PulsoTests;
+			productReference = F1000000000000000000001B /* PulsoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C10000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					C10000000000000000000002 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					C10000000000000000000003 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = C10000000000000000000002;
+					};
+				};
+			};
+			buildConfigurationList = C10000000000000000000009 /* Build configuration list for PBXProject "Pulso" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000000000000000000001;
+			productRefGroup = A1000000000000000000000A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C10000000000000000000002 /* Pulso */,
+				C10000000000000000000003 /* PulsoTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C10000000000000000000006 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000017 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C10000000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000001 /* PulsoApp.swift in Sources */,
+				B10000000000000000000002 /* AppServices.swift in Sources */,
+				B10000000000000000000003 /* SampleDTO.swift in Sources */,
+				B10000000000000000000004 /* Wire.swift in Sources */,
+				B10000000000000000000005 /* AppSettings.swift in Sources */,
+				B10000000000000000000006 /* AppStatus.swift in Sources */,
+				B10000000000000000000007 /* TypeRegistry.swift in Sources */,
+				B10000000000000000000008 /* Serializers.swift in Sources */,
+				B10000000000000000000009 /* WorkoutActivityName.swift in Sources */,
+				B1000000000000000000000A /* AnchorStore.swift in Sources */,
+				B1000000000000000000000B /* SyncEngine.swift in Sources */,
+				B1000000000000000000000C /* Outbox.swift in Sources */,
+				B1000000000000000000000D /* Uploader.swift in Sources */,
+				B1000000000000000000000E /* TriggerHub.swift in Sources */,
+				B1000000000000000000000F /* Gzip.swift in Sources */,
+				B10000000000000000000010 /* Keychain.swift in Sources */,
+				B10000000000000000000011 /* LogStore.swift in Sources */,
+				B10000000000000000000012 /* Iso8601.swift in Sources */,
+				B10000000000000000000013 /* RootView.swift in Sources */,
+				B10000000000000000000014 /* StatusView.swift in Sources */,
+				B10000000000000000000015 /* SettingsView.swift in Sources */,
+				B10000000000000000000016 /* LogView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C10000000000000000000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1000000000000000000001C /* SerializerTests.swift in Sources */,
+				B1000000000000000000001D /* OutboxTests.swift in Sources */,
+				B1000000000000000000001E /* GzipTests.swift in Sources */,
+				B1000000000000000000001F /* AnchorStoreTests.swift in Sources */,
+				B10000000000000000000020 /* WireFormatTests.swift in Sources */,
+				B10000000000000000000021 /* TestSupport.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C10000000000000000000013 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C10000000000000000000002 /* Pulso */;
+			targetProxy = C10000000000000000000012 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		C1000000000000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		C1000000000000000000000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C1000000000000000000000D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Pulso/Pulso.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Pulso/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lenilson.pulso;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		C1000000000000000000000E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Pulso/Pulso.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Pulso/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lenilson.pulso;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		C10000000000000000000010 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lenilson.pulso.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Pulso.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Pulso";
+			};
+			name = Debug;
+		};
+		C10000000000000000000011 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lenilson.pulso.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Pulso.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Pulso";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C10000000000000000000009 /* Build configuration list for PBXProject "Pulso" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1000000000000000000000A /* Debug */,
+				C1000000000000000000000B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C1000000000000000000000C /* Build configuration list for PBXNativeTarget "Pulso" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C1000000000000000000000D /* Debug */,
+				C1000000000000000000000E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C1000000000000000000000F /* Build configuration list for PBXNativeTarget "PulsoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C10000000000000000000010 /* Debug */,
+				C10000000000000000000011 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C10000000000000000000001 /* Project object */;
+}

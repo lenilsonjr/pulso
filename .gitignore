@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+DerivedData/
+build/
+*.xcresult
+
+# Reference server data
+server/data/
+
+# Python
+__pycache__/

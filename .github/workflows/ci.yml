@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  server:
+    name: Reference server tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run server test suite
+        run: python3 server/test_server.py
+
+  app:
+    name: App build & unit tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pick a simulator
+        id: sim
+        run: |
+          NAME=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          names = [d["name"] for runtime, devs in devices.items() if "iOS" in runtime
+                   for d in devs if d["isAvailable"] and d["name"].startswith("iPhone")]
+          print(sorted(names)[-1])')
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "Using simulator: $NAME"
+      - name: Build and test
+        run: |
+          xcodebuild test \
+            -project Pulso.xcodeproj \
+            -scheme Pulso \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            CODE_SIGNING_ALLOWED=NO
