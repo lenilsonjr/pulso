@@ -108,8 +108,16 @@ final class AppServices {
 
     func refreshAuthStatus() async {
         guard !status.healthUnavailable else { return }
-        let request = try? await healthStore.statusForAuthorizationRequest(toShare: [], read: TypeRegistry.readTypes)
-        status.authNeeded = request == .shouldRequest
+        do {
+            let request = try await healthStore.statusForAuthorizationRequest(toShare: [], read: TypeRegistry.readTypes)
+            status.authNeeded = request == .shouldRequest
+        } catch {
+            // Typically a signing problem (missing HealthKit entitlement) —
+            // surface it, or "no permission" becomes indistinguishable from a
+            // build issue.
+            status.authNeeded = false
+            await log.warn("could not determine Health authorization status: \(error.localizedDescription)")
+        }
     }
 
     func refreshDerived() async {
