@@ -147,7 +147,6 @@ Pulso/            the iOS app (SwiftUI, zero dependencies)
 PulsoTests/       unit tests (serializers, outbox state machine, gzip, wire format)
 server/           reference receiver (single-file Python, stdlib only) + Dockerfile
 docs/PROTOCOL.md  the versioned app↔server contract
-HANDOFF.md        original design document — the reasoning behind the architecture
 ```
 
 ## License
