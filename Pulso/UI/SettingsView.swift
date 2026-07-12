@@ -42,14 +42,18 @@ struct SettingsView: View {
                     Text("Base URL of your Pulso server — every sample goes there and nowhere else. Plain HTTP is fine on a Tailscale network; the tunnel is already encrypted.")
                 }
 
-                Section {
-                    ForEach(TypeRegistry.all) { type in
-                        Toggle(type.displayName, isOn: enabledBinding(type.key))
+                ForEach(TypeRegistry.groups, id: \.self) { group in
+                    Section {
+                        ForEach(TypeRegistry.all.filter { $0.group == group }) { type in
+                            Toggle(type.displayName, isOn: enabledBinding(type.key))
+                        }
+                    } header: {
+                        Text(group)
+                    } footer: {
+                        if group == TypeRegistry.groups.last {
+                            Text("Disabling a type stops new deliveries; data already on your server stays there. Newly enabled types back-fill their full history on the next sync.")
+                        }
                     }
-                } header: {
-                    Text("Data Types")
-                } footer: {
-                    Text("Disabling a type stops new deliveries; data already on your server stays there.")
                 }
 
                 Section {

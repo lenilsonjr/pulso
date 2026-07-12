@@ -7,6 +7,13 @@ The reference implementation lives in [`server/server.py`](../server/server.py).
 v1 is frozen. New *optional* sample fields may be added over time (additive
 changes only); anything breaking becomes `/v2/ingest`.
 
+Additive revisions so far:
+
+- **v1.1 (2026-07-12)** — 49 new `type` keys (all listed below), full
+  metadata pass-through on workouts, and the workout statistics fields
+  (`totalBasalEnergyBurned`, `averageHeartRate`, `minimumHeartRate`,
+  `maximumHeartRate`).
+
 ## Endpoints
 
 ### `POST /ingest`
@@ -65,28 +72,133 @@ significant.
 | `type` | string | One of the type keys below |
 | `start` | string | ISO 8601 with UTC offset, second precision |
 | `end` | string | Same format; equals `start` for point samples |
-| `value` | string \| number | Category name (e.g. `"asleepREM"`) or quantity number; absent for workouts |
-| `unit` | string | Only on quantity types; see table below |
+| `value` | string \| number | Category name (e.g. `"asleepREM"`) or quantity number; absent for workouts and for categories with no meaningful value (`mindfulSession`) |
+| `unit` | string | Only on quantity types; see tables below |
 | `source` | string | Name of the writing device/app, verbatim |
 | `sourceBundleId` | string | Bundle id of the writing app |
-| `metadata` | object | Only key: `timeZone` — see Timestamps |
+| `metadata` | object | See Metadata below |
 | `workoutActivityType` | string | Workouts only, e.g. `"traditionalStrengthTraining"` |
 | `duration` | number | Workouts only, seconds |
-| `totalEnergyBurned` | number | Workouts only, kcal |
+| `totalEnergyBurned` | number | Workouts only, active kcal |
+| `totalBasalEnergyBurned` | number | Workouts only, basal kcal |
 | `totalDistance` | number | Workouts only, meters |
+| `averageHeartRate` | number | Workouts only, count/min |
+| `minimumHeartRate` | number | Workouts only, count/min |
+| `maximumHeartRate` | number | Workouts only, count/min |
 
-### Type keys and units (v1)
+### Metadata
+
+- **Workouts** carry their sample's full HealthKit metadata dictionary —
+  routine names (`HKWorkoutBrandName`), the indoor flag, weather, and
+  whatever else the writing app attached. String, number, and boolean values
+  pass through as native JSON; other value types (HKQuantity, dates) are
+  stringified.
+- **Every other type** carries at most one key: `timeZone`.
+- In both cases the `timeZone` key means the sample *recorded* its timezone
+  (see Timestamps); HealthKit's raw `HKTimeZone` key is folded into it, never
+  duplicated.
+
+### Type keys and units
+
+Percent-unit types deliver human-scale values: `97` under unit `"%"` means
+97% (HealthKit's internal 0–1 fractions are converted).
+
+**Sleep & circadian**
 
 | `type` | `value` | `unit` |
 |---|---|---|
 | `sleepAnalysis` | `inBed`, `awake`, `asleepUnspecified`, `asleepCore`, `asleepDeep`, `asleepREM` | — |
+| `timeInDaylight` | number | `min` |
+| `appleSleepingWristTemperature` | number | `°C` |
+| `appleSleepingBreathingDisturbances` | number | `count` |
+| `appleStandHour` | `stood`, `idle` | — |
+| `mindfulSession` | — (interval is the data) | — |
+
+**Workouts**
+
+| `type` | `value` | `unit` |
+|---|---|---|
 | `workout` | — (see workout fields) | — |
+
+**Energy & activity**
+
+| `type` | `value` | `unit` |
+|---|---|---|
 | `stepCount` | number | `count` |
+| `activeEnergyBurned` | number | `kcal` |
+| `basalEnergyBurned` | number | `kcal` |
+| `physicalEffort` | number | `kcal/hr·kg` |
+| `appleExerciseTime` | number | `min` |
+| `appleStandTime` | number | `min` |
+| `flightsClimbed` | number | `count` |
+| `distanceWalkingRunning` | number | `m` |
+| `distanceCycling` | number | `m` |
+| `distanceSwimming` | number | `m` |
+| `swimmingStrokeCount` | number | `count` |
+
+**Cardio & recovery**
+
+| `type` | `value` | `unit` |
+|---|---|---|
 | `heartRate` | number | `count/min` |
 | `restingHeartRate` | number | `count/min` |
 | `heartRateVariabilitySDNN` | number | `ms` |
-| `activeEnergyBurned` | number | `kcal` |
+| `vo2Max` | number | `mL/(kg·min)` |
+| `heartRateRecoveryOneMinute` | number | `count/min` |
+| `walkingHeartRateAverage` | number | `count/min` |
+| `oxygenSaturation` | number | `%` |
+| `respiratoryRate` | number | `count/min` |
+
+**Body**
+
+| `type` | `value` | `unit` |
+|---|---|---|
 | `bodyMass` | number | `kg` |
+| `bodyFatPercentage` | number | `%` |
+| `leanBodyMass` | number | `kg` |
+| `bodyMassIndex` | number | `count` |
+| `waistCircumference` | number | `cm` |
+| `height` | number | `cm` |
+
+**Running & gait**
+
+| `type` | `value` | `unit` |
+|---|---|---|
+| `runningPower` | number | `W` |
+| `runningSpeed` | number | `m/s` |
+| `runningStrideLength` | number | `m` |
+| `runningVerticalOscillation` | number | `cm` |
+| `runningGroundContactTime` | number | `ms` |
+| `walkingSpeed` | number | `m/s` |
+| `walkingStepLength` | number | `cm` |
+| `walkingAsymmetryPercentage` | number | `%` |
+| `walkingDoubleSupportPercentage` | number | `%` |
+| `appleWalkingSteadiness` | number | `%` |
+| `sixMinuteWalkTestDistance` | number | `m` |
+| `stairAscentSpeed` | number | `m/s` |
+| `stairDescentSpeed` | number | `m/s` |
+
+**Audio exposure**
+
+| `type` | `value` | `unit` |
+|---|---|---|
+| `environmentalAudioExposure` | number | `dBASPL` |
+| `headphoneAudioExposure` | number | `dBASPL` |
+
+**Nutrition**
+
+| `type` | `value` | `unit` |
+|---|---|---|
+| `dietaryEnergyConsumed` | number | `kcal` |
+| `dietaryProtein` | number | `g` |
+| `dietaryCarbohydrates` | number | `g` |
+| `dietaryFatTotal` | number | `g` |
+| `dietaryFiber` | number | `g` |
+| `dietarySugar` | number | `g` |
+| `dietarySodium` | number | `mg` |
+| `dietaryWater` | number | `mL` |
+| `dietaryCaffeine` | number | `mg` |
+| `numberOfAlcoholicBeverages` | number | `count` |
 
 Unknown category values serialize as `"value_<n>"`; unknown workout
 activities as `"activity_<n>"` — data is never silently merged into "other".

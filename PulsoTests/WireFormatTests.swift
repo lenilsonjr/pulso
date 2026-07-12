@@ -11,7 +11,7 @@ final class WireFormatTests: XCTestCase {
             value: .string("asleepREM"),
             source: "Apple Watch",
             sourceBundleId: "com.apple.health",
-            metadata: ["timeZone": "Europe/Lisbon"]
+            metadata: ["timeZone": .string("Europe/Lisbon")]
         )
     }
 
@@ -33,6 +33,48 @@ final class WireFormatTests: XCTestCase {
         let json = String(decoding: try Wire.encodeElements([.sample(dto)]), as: UTF8.self)
         XCTAssertTrue(json.contains(#""value":58"#), json)
         XCTAssertTrue(json.contains(#""unit":"count\/min""#) || json.contains(#""unit":"count/min""#), json)
+    }
+
+    /// Golden test for the v1.1 workout enrichment: full metadata (string /
+    /// bool / number) and the statistics fields.
+    func testWorkoutGoldenEncoding() throws {
+        var dto = SampleDTO(
+            uuid: "W-1",
+            type: "workout",
+            start: "2026-07-05T18:30:00+01:00",
+            end: "2026-07-05T19:30:12+01:00",
+            source: "SmartGym",
+            metadata: [
+                "HKIndoorWorkout": .bool(true),
+                "HKWorkoutBrandName": .string("Push Day A"),
+                "customRounds": .number(3),
+            ]
+        )
+        dto.workoutActivityType = "traditionalStrengthTraining"
+        dto.duration = 3612.4
+        dto.totalEnergyBurned = 412
+        dto.totalBasalEnergyBurned = 96.5
+        dto.averageHeartRate = 132.5
+        dto.minimumHeartRate = 88
+        dto.maximumHeartRate = 171
+
+        let json = String(decoding: try Wire.encodeElements([.sample(dto)]), as: UTF8.self)
+        XCTAssertEqual(json, """
+        [{"averageHeartRate":132.5,"duration":3612.4,"end":"2026-07-05T19:30:12+01:00",\
+        "maximumHeartRate":171,"metadata":{"HKIndoorWorkout":true,"HKWorkoutBrandName":"Push Day A",\
+        "customRounds":3},"minimumHeartRate":88,"source":"SmartGym",\
+        "start":"2026-07-05T18:30:00+01:00","totalBasalEnergyBurned":96.5,"totalEnergyBurned":412,\
+        "type":"workout","uuid":"W-1","workoutActivityType":"traditionalStrengthTraining"}]
+        """)
+    }
+
+    func testJSONValueDecodingRoundTrip() throws {
+        let original: [String: JSONValue] = [
+            "s": .string("x"), "n": .number(2.5), "whole": .number(3), "b": .bool(true), "f": .bool(false),
+        ]
+        let data = try JSONEncoder().encode(original)
+        let decoded = try JSONDecoder().decode([String: JSONValue].self, from: data)
+        XCTAssertEqual(decoded, original)
     }
 
     func testTombstoneEncoding() throws {

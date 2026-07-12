@@ -49,11 +49,17 @@ unreadable while the phone is locked. In practice, sleep data lands on your
 server within minutes of picking up the phone in the morning. That is the
 ceiling on iOS, and it's good enough.
 
-### Synced types (v1)
+### Synced types
 
-Sleep analysis, workouts, steps, heart rate, resting heart rate, HRV (SDNN),
-active energy, body mass. The architecture is type-generic — adding a type
-is a row in [`TypeRegistry.swift`](Pulso/Health/TypeRegistry.swift).
+57 types across eight groups: sleep & circadian (sleep stages, daylight
+time, wrist temperature, breathing disturbances, stand hours, mindfulness),
+workouts (with full metadata and heart-rate statistics), energy & activity,
+cardio & recovery, body composition, running & gait form, audio exposure,
+and nutrition. The complete list with units lives in
+[`docs/PROTOCOL.md`](docs/PROTOCOL.md). The architecture is type-generic —
+adding a type is a row in
+[`TypeRegistry.swift`](Pulso/Health/TypeRegistry.swift). Every type can be
+toggled individually in Settings.
 
 ## Quick start
 

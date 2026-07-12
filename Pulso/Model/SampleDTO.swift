@@ -11,16 +11,56 @@ struct SampleDTO: Codable, Equatable, Sendable {
     var unit: String? = nil
     var source: String
     var sourceBundleId: String? = nil
-    /// Only carries "timeZone", and only when the sample itself recorded one
-    /// (HKMetadataKeyTimeZone). Absent means the timestamps' offset is the
-    /// device timezone at sync time — an assumption, not a recorded fact.
-    var metadata: [String: String]? = nil
+    /// For workouts: the sample's full HealthKit metadata dictionary. For
+    /// every other type the only key is "timeZone". In both cases "timeZone"
+    /// appears only when the sample itself recorded one (HKMetadataKeyTimeZone);
+    /// absent means the timestamps' offset is the device timezone at sync
+    /// time — an assumption, not a recorded fact.
+    var metadata: [String: JSONValue]? = nil
 
     // Workouts only.
     var workoutActivityType: String? = nil
     var duration: Double? = nil
     var totalEnergyBurned: Double? = nil
+    var totalBasalEnergyBurned: Double? = nil
     var totalDistance: Double? = nil
+    var averageHeartRate: Double? = nil
+    var minimumHeartRate: Double? = nil
+    var maximumHeartRate: Double? = nil
+}
+
+/// A metadata value on the wire. HealthKit metadata is heterogeneous;
+/// strings, numbers, and booleans pass through natively and anything else
+/// (HKQuantity, dates) is stringified by the serializer.
+enum JSONValue: Codable, Equatable, Sendable {
+    case string(String)
+    case number(Double)
+    case bool(Bool)
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let s = try? container.decode(String.self) {
+            self = .string(s)
+        } else if let b = try? container.decode(Bool.self) {
+            self = .bool(b)
+        } else if let n = try? container.decode(Double.self) {
+            self = .number(n)
+        } else {
+            throw DecodingError.typeMismatch(
+                JSONValue.self,
+                .init(codingPath: decoder.codingPath, debugDescription: "metadata values must be string, number, or bool")
+            )
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .string(let s): try container.encode(s)
+        case .number(let n): try container.encode(n)
+        case .bool(let b): try container.encode(b)
+        }
+    }
 }
 
 /// Category samples carry a string (e.g. "asleepREM"); quantity samples a number.

@@ -50,9 +50,14 @@ struct StatusView: View {
                     }
                 }
 
-                Section("Data Types") {
-                    ForEach(enabledTypes) { type in
-                        typeRow(type)
+                ForEach(TypeRegistry.groups, id: \.self) { group in
+                    let types = enabledTypes.filter { $0.group == group }
+                    if !types.isEmpty {
+                        Section(group) {
+                            ForEach(types) { type in
+                                typeRow(type)
+                            }
+                        }
                     }
                 }
 
