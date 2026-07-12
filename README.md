@@ -6,6 +6,12 @@ Pulso is an open-source iOS app with one job: read the Apple Health data you
 select and ship it — incrementally, in the background, surviving crashes and
 outages — to an HTTP endpoint you configure. Self-hosted personal telemetry.
 
+<p align="center">
+  <img src="docs/screenshots/status.png" width="300" alt="Status screen: per-type sync state and Sync Now">
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/settings.png" width="300" alt="Settings screen: server endpoint, bearer token, per-type toggles">
+</p>
+
 ## Privacy model (read this first)
 
 - All data flows **device → your server**. There is no cloud, no account, no
