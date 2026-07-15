@@ -1,6 +1,10 @@
-# Pulso
+<p align="center">
+  <img src="docs/icon.png" width="128" alt="Pulso app icon — an ECG snap electrode">
+</p>
 
-**Continuously deliver your Apple Health data to a server you own.**
+<h1 align="center">Pulso</h1>
+
+<p align="center"><strong>Continuously deliver your Apple Health data to a server you own.</strong></p>
 
 Pulso is an open-source iOS app with one job: read the Apple Health data you
 select and ship it — incrementally, in the background, surviving crashes and
