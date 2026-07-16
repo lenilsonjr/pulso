@@ -79,7 +79,14 @@ final class AppServices {
         case .active:
             Task {
                 await refreshAuthStatus()
-                await syncNow(.foreground)
+                if status.authNeeded {
+                    // New types join readTypes as the registry grows; ask as
+                    // soon as HealthKit reports something to ask rather than
+                    // waiting for a tap on the StatusView banner.
+                    await requestHealthAccess() // asks, re-checks, then syncs
+                } else {
+                    await syncNow(.foreground)
+                }
             }
         case .background:
             hub.scheduleNextRefresh()

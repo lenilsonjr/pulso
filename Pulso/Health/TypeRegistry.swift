@@ -63,6 +63,11 @@ enum TypeRegistry {
             types.append(quantity(.appleSleepingBreathingDisturbances, key: "appleSleepingBreathingDisturbances",
                                   name: "Breathing Disturbances", group: Group.sleep,
                                   unit: .count(), label: "count"))
+            types.append(SyncedType(
+                key: "stateOfMind", displayName: "State of Mind", group: Group.sleep,
+                sampleType: HKObjectType.stateOfMindType(),
+                frequency: .hourly, serialize: Serializers.stateOfMind
+            ))
         }
         types += [
             SyncedType(
