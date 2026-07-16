@@ -113,6 +113,14 @@ Percent-unit types deliver human-scale values: `97` under unit `"%"` means
 | `appleSleepingBreathingDisturbances` | number | `count` |
 | `appleStandHour` | `stood`, `idle` | — |
 | `mindfulSession` | — (interval is the data) | — |
+| `stateOfMind` | number: valence in [−1, +1] | `valence` |
+
+`stateOfMind` (iOS 18+) additionally carries in `metadata`: `kind`
+(`momentaryEmotion` \| `dailyMood`), `valenceClassification`
+(`veryUnpleasant` … `veryPleasant`), and, when present, `labels` and
+`associations` as comma-joined name lists (e.g. `"happy,grateful"`,
+`"family,work"`). Unknown future enum cases surface as `label_<n>` /
+`association_<n>` / `kind_<n>` / `classification_<n>`.
 
 **Workouts**
 

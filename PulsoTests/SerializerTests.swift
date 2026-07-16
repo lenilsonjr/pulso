@@ -233,6 +233,7 @@ final class SerializerTests: XCTestCase {
         ]
         if #available(iOS 18.0, *) {
             expected.append("appleSleepingBreathingDisturbances")
+            expected.append("stateOfMind")
         }
         expected += [
             "appleStandHour", "mindfulSession",

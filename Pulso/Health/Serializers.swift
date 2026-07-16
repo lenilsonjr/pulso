@@ -89,6 +89,126 @@ enum Serializers {
         }
     }
 
+    // MARK: - State of Mind (iOS 18+)
+
+    /// HKStateOfMind is its own HKSample subclass (neither category nor
+    /// quantity): a valence in [-1, +1] plus a kind, discrete emotion labels,
+    /// and life-area associations. Valence rides `value`; the enums ride
+    /// metadata as comma-joined names so the wire format stays scalar.
+    @available(iOS 18.0, *)
+    @Sendable
+    static func stateOfMind(_ sample: HKSample, context: SerializerContext) -> SampleDTO? {
+        guard let mood = sample as? HKStateOfMind else { return nil }
+        var dto = base(mood, type: "stateOfMind", context: context)
+        dto.value = .number(mood.valence)
+        dto.unit = "valence"
+        var metadata = dto.metadata ?? [:]
+        metadata["kind"] = .string(stateOfMindKindName(mood.kind))
+        metadata["valenceClassification"] = .string(valenceClassificationName(mood.valenceClassification))
+        if !mood.labels.isEmpty {
+            metadata["labels"] = .string(mood.labels.map(stateOfMindLabelName).joined(separator: ","))
+        }
+        if !mood.associations.isEmpty {
+            metadata["associations"] = .string(
+                mood.associations.map(stateOfMindAssociationName).joined(separator: ","))
+        }
+        dto.metadata = metadata
+        return dto
+    }
+
+    @available(iOS 18.0, *)
+    static func stateOfMindKindName(_ kind: HKStateOfMind.Kind) -> String {
+        switch kind {
+        case .momentaryEmotion: "momentaryEmotion"
+        case .dailyMood: "dailyMood"
+        @unknown default: "kind_\(kind.rawValue)"
+        }
+    }
+
+    @available(iOS 18.0, *)
+    static func valenceClassificationName(_ c: HKStateOfMind.ValenceClassification) -> String {
+        switch c {
+        case .veryUnpleasant: "veryUnpleasant"
+        case .unpleasant: "unpleasant"
+        case .slightlyUnpleasant: "slightlyUnpleasant"
+        case .neutral: "neutral"
+        case .slightlyPleasant: "slightlyPleasant"
+        case .pleasant: "pleasant"
+        case .veryPleasant: "veryPleasant"
+        @unknown default: "classification_\(c.rawValue)"
+        }
+    }
+
+    @available(iOS 18.0, *)
+    static func stateOfMindLabelName(_ label: HKStateOfMind.Label) -> String {
+        switch label {
+        case .amazed: "amazed"
+        case .amused: "amused"
+        case .angry: "angry"
+        case .annoyed: "annoyed"
+        case .anxious: "anxious"
+        case .ashamed: "ashamed"
+        case .brave: "brave"
+        case .calm: "calm"
+        case .confident: "confident"
+        case .content: "content"
+        case .disappointed: "disappointed"
+        case .discouraged: "discouraged"
+        case .disgusted: "disgusted"
+        case .drained: "drained"
+        case .embarrassed: "embarrassed"
+        case .excited: "excited"
+        case .frustrated: "frustrated"
+        case .grateful: "grateful"
+        case .guilty: "guilty"
+        case .happy: "happy"
+        case .hopeful: "hopeful"
+        case .hopeless: "hopeless"
+        case .indifferent: "indifferent"
+        case .irritated: "irritated"
+        case .jealous: "jealous"
+        case .joyful: "joyful"
+        case .lonely: "lonely"
+        case .overwhelmed: "overwhelmed"
+        case .passionate: "passionate"
+        case .peaceful: "peaceful"
+        case .proud: "proud"
+        case .relieved: "relieved"
+        case .sad: "sad"
+        case .satisfied: "satisfied"
+        case .scared: "scared"
+        case .stressed: "stressed"
+        case .surprised: "surprised"
+        case .worried: "worried"
+        @unknown default: "label_\(label.rawValue)"
+        }
+    }
+
+    @available(iOS 18.0, *)
+    static func stateOfMindAssociationName(_ a: HKStateOfMind.Association) -> String {
+        switch a {
+        case .community: "community"
+        case .currentEvents: "currentEvents"
+        case .dating: "dating"
+        case .education: "education"
+        case .family: "family"
+        case .fitness: "fitness"
+        case .friends: "friends"
+        case .health: "health"
+        case .hobbies: "hobbies"
+        case .identity: "identity"
+        case .money: "money"
+        case .partner: "partner"
+        case .selfCare: "selfCare"
+        case .spirituality: "spirituality"
+        case .tasks: "tasks"
+        case .travel: "travel"
+        case .weather: "weather"
+        case .work: "work"
+        @unknown default: "association_\(a.rawValue)"
+        }
+    }
+
     @Sendable
     static func workout(_ sample: HKSample, context: SerializerContext) -> SampleDTO? {
         guard let workout = sample as? HKWorkout else { return nil }
