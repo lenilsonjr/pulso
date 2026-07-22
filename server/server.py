@@ -24,6 +24,18 @@ import zlib
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+
+def _parse_end(value):
+    """ISO 8601 'end' timestamp → aware datetime, or None. Comparison must
+    happen in absolute time: offsets differ across the archive."""
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else None
+
 PORT = int(os.environ.get("PULSO_PORT", "8787"))
 BIND = os.environ.get("PULSO_BIND", "0.0.0.0")
 DATA_DIR = os.environ.get("PULSO_DATA", "./data")
@@ -46,10 +58,12 @@ class Store:
         self.lock = threading.Lock()
         self.seen = set()      # sample uuids already stored
         self.deleted = set()   # uuids already recorded as deleted
+        self.latest = {}       # type stem -> (aware datetime, original string)
         os.makedirs(root, exist_ok=True)
         for name in sorted(os.listdir(root)):
             if not name.endswith(".ndjson"):
                 continue
+            stem = name[: -len(".ndjson")]
             with open(os.path.join(root, name), encoding="utf-8") as f:
                 for line in f:
                     try:
@@ -60,6 +74,19 @@ class Store:
                         self.deleted.update(u for u in obj.get("deleted", []) if isinstance(u, str))
                     elif isinstance(obj.get("uuid"), str):
                         self.seen.add(obj["uuid"])
+                        self._note_latest(stem, obj.get("end"))
+
+    def _note_latest(self, stem, end_value):
+        parsed = _parse_end(end_value)
+        if parsed is None:
+            return
+        current = self.latest.get(stem)
+        if current is None or parsed > current[0]:
+            self.latest[stem] = (parsed, end_value)
+
+    def latest_by_type(self):
+        with self.lock:
+            return {stem: original for stem, (_, original) in self.latest.items()}
 
     def _append(self, stem, obj):
         with open(os.path.join(self.root, stem + ".ndjson"), "a", encoding="utf-8") as f:
@@ -90,6 +117,7 @@ class Store:
                 stem = UNSAFE.sub("_", str(el.get("type") or "")) or "unknown"
                 self._append(stem, {**el, "receivedAt": stamp})
                 self.seen.add(uuid)
+                self._note_latest(stem, el.get("end"))
                 new += 1
         return received, new, tombstoned
 
@@ -113,6 +141,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/health":
             self._reply(200, {"status": "ok"})
+        elif self.path == "/latest":
+            # Per-type newest sample `end` timestamp. Fresh app installs use
+            # this to skip re-reading history the server already holds.
+            if not self._authorized():
+                self._reply(401, {"error": "unauthorized"})
+                return
+            self._reply(200, self.store.latest_by_type())
         else:
             self._reply(404, {"error": "not found"})
 

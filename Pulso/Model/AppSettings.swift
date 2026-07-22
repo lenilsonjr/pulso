@@ -57,6 +57,12 @@ final class AppSettings {
         return (url, Keychain.string(for: SettingsKeys.tokenAccount))
     }
 
+    nonisolated static func currentBase() -> (url: URL, token: String?)? {
+        let raw = UserDefaults.standard.string(forKey: SettingsKeys.endpoint) ?? ""
+        guard let base = baseURL(from: raw) else { return nil }
+        return (base, Keychain.string(for: SettingsKeys.tokenAccount))
+    }
+
     nonisolated static func currentEnabled(_ key: String) -> Bool {
         storedEnabled()[key] ?? true
     }

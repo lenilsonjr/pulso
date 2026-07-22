@@ -159,6 +159,40 @@ class ServerTest(unittest.TestCase):
         status, _ = self._request("/nope", b"[]")
         self.assertEqual(status, 404)
 
+    def test_latest_endpoint(self):
+        status, body = self._request("/latest")
+        self.assertEqual(status, 200)
+        self.assertEqual(body, {}, "empty store has no latest timestamps")
+
+        # Comparison must be in absolute time: 05:00-04:00 (09:00Z) is later
+        # than 09:03+01:00 (08:03Z) despite sorting earlier as a string.
+        self._post(SAMPLES + [{
+            "uuid": "LATE-1", "type": "sleepAnalysis",
+            "start": "2026-07-06T01:00:00-04:00", "end": "2026-07-06T05:00:00-04:00",
+            "value": "inBed", "source": "WHOOP",
+        }])
+        status, body = self._request("/latest")
+        self.assertEqual(status, 200)
+        self.assertEqual(body["sleepAnalysis"], "2026-07-06T05:00:00-04:00")
+        self.assertEqual(body["heartRate"], "2026-07-06T08:00:00+01:00")
+        self.assertNotIn("_deleted", body, "tombstones carry no timestamps")
+
+    def test_latest_survives_restart(self):
+        self._post(SAMPLES)
+        self.httpd.shutdown()
+        self._start()
+        status, body = self._request("/latest")
+        self.assertEqual(status, 200)
+        self.assertEqual(body["sleepAnalysis"], "2026-07-06T02:40:00+01:00")
+
+    def test_latest_requires_auth_when_token_set(self):
+        server.TOKEN = "secret"
+        self.addCleanup(setattr, server, "TOKEN", "")
+        status, _ = self._request("/latest")
+        self.assertEqual(status, 401)
+        status, body = self._request("/latest", headers={"Authorization": "Bearer secret"})
+        self.assertEqual(status, 200)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

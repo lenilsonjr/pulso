@@ -37,7 +37,14 @@ final class AppServices {
             log: log,
             status: status
         )
-        engine = SyncEngine(healthStore: healthStore, anchors: anchors, outbox: outbox, log: log, status: status)
+        let uploader = uploader
+        engine = SyncEngine(
+            healthStore: healthStore, anchors: anchors, outbox: outbox, log: log, status: status,
+            latestHints: {
+                guard let base = AppSettings.currentBase() else { return nil }
+                return await uploader.fetchLatest(base: base.url, token: base.token)
+            }
+        )
         hub = TriggerHub(healthStore: healthStore, engine: engine, log: log)
 
         status.load()
@@ -135,13 +142,15 @@ final class AppServices {
 
     /// Clears all sync state and re-sends everything. Safe (the server
     /// dedupes by uuid) but slow — guarded by a confirmation in Settings.
+    /// Uses .reimport so the server catch-up shortcut is bypassed; if the
+    /// pass is interrupted, tap Re-import again to restart it.
     func reimportAll() async {
         await log.warn("full re-import requested — clearing anchors and outbox")
         await outbox.removeAll()
         anchors.clearAll()
         await engine.resetAllAnchors()
         status.resetCounters()
-        await syncNow(.manual)
+        await syncNow(.reimport)
     }
 
     func testConnection() async -> String {

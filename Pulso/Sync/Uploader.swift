@@ -42,6 +42,21 @@ struct HTTPUploader: Uploading {
         )
     }
 
+    /// GET <base>/latest — per-type newest sample timestamp on the server.
+    /// nil on any failure (older servers without the endpoint included);
+    /// callers fall back to a full backfill.
+    func fetchLatest(base: URL, token: String?) async -> [String: String]? {
+        guard let url = URL(string: base.absoluteString + "/latest") else { return nil }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 10
+        if let token, !token.isEmpty {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        guard let (data, response) = try? await session.data(for: request),
+              (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
+        return try? JSONDecoder().decode([String: String].self, from: data)
+    }
+
     /// GET <base>/health — the Settings "Test Connection" button.
     func checkHealth(_ url: URL) async -> String {
         var request = URLRequest(url: url)

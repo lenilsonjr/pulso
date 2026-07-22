@@ -13,6 +13,8 @@ Additive revisions so far:
   metadata pass-through on workouts, and the workout statistics fields
   (`totalBasalEnergyBurned`, `averageHeartRate`, `minimumHeartRate`,
   `maximumHeartRate`).
+- **v1.2 (2026-07-22)** — optional `GET /latest` endpoint so fresh app
+  installs skip re-reading history the server already holds.
 
 ## Endpoints
 
@@ -60,6 +62,31 @@ Batches are never dropped and never reordered.
 
 Liveness probe; anything `200` passes. Used by the app's "Test Connection"
 button.
+
+### `GET /latest` (optional)
+
+Returns a JSON object mapping each stored `type` to the **newest sample
+`end` timestamp** the server holds, in the sample's original ISO 8601 form:
+
+```json
+{ "sleepAnalysis": "2026-07-15T09:03:00+01:00", "heartRate": "2026-07-15T08:59:12+01:00" }
+```
+
+Empty object when the store is empty. Requires the bearer token when one is
+configured (same rule as `/ingest`).
+
+Purpose: when the app has no sync cursor for a type (fresh install, newly
+enabled type), it asks `/latest` and backfills only from that timestamp
+minus a 72-hour safety margin, instead of re-reading and re-sending all
+history. Servers compare timestamps in **absolute time** — offsets vary
+across the archive, so string comparison picks wrong maxima.
+
+The endpoint is optional: on any non-200 the app falls back to a full
+backfill, which the server's uuid dedupe makes safe. Two costs of relying
+on it: samples backfilled by a source more than 72 hours late are skipped
+until a manual re-import, and deletions older than the catch-up point are
+not tombstoned. The app's "Re-import Full History" always bypasses
+`/latest`.
 
 ## Sample object schema
 

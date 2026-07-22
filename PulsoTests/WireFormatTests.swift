@@ -126,6 +126,24 @@ final class WireFormatTests: XCTestCase {
         XCTAssertEqual(slices, [elements])
     }
 
+    func testCatchUpCutoffs() {
+        let latest = [
+            "sleepAnalysis": "2026-07-15T09:03:00+01:00",
+            "heartRate": "2026-07-15T05:00:00-04:00",
+            "broken": "not a date",
+        ]
+        let cutoffs = CatchUp.cutoffs(fromLatest: latest)
+        // 72h margin, computed in absolute time: 09:03+01:00 == 08:03Z.
+        XCTAssertEqual(
+            cutoffs["sleepAnalysis"],
+            Date(timeIntervalSince1970: 1_784_102_580 - 72 * 3600)
+        )
+        XCTAssertEqual(cutoffs.count, 2, "unparseable timestamps are dropped, not fatal")
+        XCTAssertNil(cutoffs["broken"])
+        let sleep = cutoffs["sleepAnalysis"]!, heart = cutoffs["heartRate"]!
+        XCTAssertEqual(heart.timeIntervalSince(sleep), 3420, "offsets must normalize to absolute time")
+    }
+
     func testBaseURLParsing() {
         XCTAssertEqual(
             AppSettings.baseURL(from: "100.64.0.7:8787")?.absoluteString,
