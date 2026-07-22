@@ -8,7 +8,7 @@ import UIKit
 /// foreground hook (wired via AppServices.scenePhase).
 @MainActor
 final class TriggerHub {
-    static let refreshTaskID = (Bundle.main.bundleIdentifier ?? "com.lenilson.pulso") + ".refresh"
+    static let refreshTaskID = (Bundle.main.bundleIdentifier ?? "dev.lenilson.pulso") + ".refresh"
 
     private let healthStore: HKHealthStore
     private let engine: SyncEngine

@@ -3,7 +3,7 @@ import Security
 
 /// Single-purpose keychain wrapper for the optional server bearer token.
 enum Keychain {
-    private static let service = Bundle.main.bundleIdentifier ?? "com.lenilson.pulso"
+    private static let service = Bundle.main.bundleIdentifier ?? "dev.lenilson.pulso"
 
     static func string(for account: String) -> String? {
         var query = base(account)
