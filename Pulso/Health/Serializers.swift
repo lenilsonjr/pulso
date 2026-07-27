@@ -61,6 +61,20 @@ enum Serializers {
         }
     }
 
+    /// Value is notApplicable (the event itself is the data); the one
+    /// meaningful HealthKit metadata field becomes metadata.protectionUsed.
+    @Sendable
+    static func sexualActivity(_ sample: HKSample, context: SerializerContext) -> SampleDTO? {
+        guard let categorySample = sample as? HKCategorySample else { return nil }
+        var dto = base(categorySample, type: "sexualActivity", context: context)
+        if let protectionUsed = categorySample.metadata?[HKMetadataKeySexualActivityProtectionUsed] as? Bool {
+            var metadata = dto.metadata ?? [:]
+            metadata["protectionUsed"] = .bool(protectionUsed)
+            dto.metadata = metadata
+        }
+        return dto
+    }
+
     static func standHourName(_ rawValue: Int) -> String {
         switch HKCategoryValueAppleStandHour(rawValue: rawValue) {
         case .stood: "stood"

@@ -15,6 +15,8 @@ Additive revisions so far:
   `maximumHeartRate`).
 - **v1.2 (2026-07-22)** — optional `GET /latest` endpoint so fresh app
   installs skip re-reading history the server already holds.
+- **v1.3 (2026-07-27)** — `sexualActivity` type key with the
+  `metadata.protectionUsed` boolean.
 
 ## Endpoints
 
@@ -120,8 +122,10 @@ significant.
   whatever else the writing app attached. String, number, and boolean values
   pass through as native JSON; other value types (HKQuantity, dates) are
   stringified.
+- **`sexualActivity`** samples may additionally carry
+  `protectionUsed` (boolean, absent when not recorded — never defaulted).
 - **Every other type** carries at most one key: `timeZone`.
-- In both cases the `timeZone` key means the sample *recorded* its timezone
+- In all cases the `timeZone` key means the sample *recorded* its timezone
   (see Timestamps); HealthKit's raw `HKTimeZone` key is folded into it, never
   duplicated.
 
@@ -226,6 +230,12 @@ Percent-unit types deliver human-scale values: `97` under unit `"%"` means
 | `dietaryWater` | number | `mL` |
 | `dietaryCaffeine` | number | `mg` |
 | `numberOfAlcoholicBeverages` | number | `count` |
+
+**Lifestyle**
+
+| `type` | `value` | `unit` |
+|---|---|---|
+| `sexualActivity` | — (event is the data; see `metadata.protectionUsed`) | — |
 
 Unknown category values serialize as `"value_<n>"`; unknown workout
 activities as `"activity_<n>"` — data is never silently merged into "other".

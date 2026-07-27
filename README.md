@@ -61,11 +61,11 @@ ceiling on iOS, and it's good enough.
 
 ### Synced types
 
-57 types across eight groups: sleep & circadian (sleep stages, daylight
+58 types across nine groups: sleep & circadian (sleep stages, daylight
 time, wrist temperature, breathing disturbances, stand hours, mindfulness),
 workouts (with full metadata and heart-rate statistics), energy & activity,
 cardio & recovery, body composition, running & gait form, audio exposure,
-and nutrition. The complete list with units lives in
+nutrition, and lifestyle (sexual activity). The complete list with units lives in
 [`docs/PROTOCOL.md`](docs/PROTOCOL.md). The architecture is type-generic —
 adding a type is a row in
 [`TypeRegistry.swift`](Pulso/Health/TypeRegistry.swift). Every type can be

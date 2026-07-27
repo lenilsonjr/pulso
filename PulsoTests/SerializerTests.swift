@@ -225,6 +225,32 @@ final class SerializerTests: XCTestCase {
         XCTAssertEqual(dto.type, "mindfulSession")
     }
 
+    func testSexualActivitySerialization() throws {
+        let start = TestSupport.date(2026, 7, 26, 23, 30, zone: "Europe/Lisbon")
+        let withProtection = HKCategorySample(
+            type: HKCategoryType(.sexualActivity),
+            value: 0, // HKCategoryValue.notApplicable
+            start: start, end: start,
+            metadata: [
+                HKMetadataKeySexualActivityProtectionUsed: true,
+                HKMetadataKeyTimeZone: "Europe/Lisbon",
+            ]
+        )
+        var dto = try XCTUnwrap(TypeRegistry.type(for: "sexualActivity")?.serialize(withProtection, context))
+        XCTAssertEqual(dto.type, "sexualActivity")
+        XCTAssertNil(dto.value, "notApplicable category value must be omitted")
+        XCTAssertEqual(dto.start, "2026-07-26T23:30:00+01:00")
+        XCTAssertEqual(dto.metadata?["protectionUsed"], .bool(true))
+        XCTAssertEqual(dto.metadata?["timeZone"], .string("Europe/Lisbon"))
+        XCTAssertNil(dto.metadata?[HKMetadataKeySexualActivityProtectionUsed], "raw HK key must not leak")
+
+        let bare = HKCategorySample(
+            type: HKCategoryType(.sexualActivity), value: 0, start: start, end: start
+        )
+        dto = try XCTUnwrap(TypeRegistry.type(for: "sexualActivity")?.serialize(bare, context))
+        XCTAssertNil(dto.metadata, "no metadata key means absent, not false")
+    }
+
     /// The wire type keys are protocol surface — pin the full v1.1 set.
     func testRegistryCoversTheV11TypeSet() {
         var expected = [
@@ -259,11 +285,13 @@ final class SerializerTests: XCTestCase {
             "dietaryEnergyConsumed", "dietaryProtein", "dietaryCarbohydrates", "dietaryFatTotal",
             "dietaryFiber", "dietarySugar", "dietarySodium", "dietaryWater", "dietaryCaffeine",
             "numberOfAlcoholicBeverages",
+            // Lifestyle
+            "sexualActivity",
         ]
         XCTAssertEqual(TypeRegistry.all.map(\.key), expected)
         XCTAssertEqual(Set(TypeRegistry.all.map(\.key)).count, TypeRegistry.all.count, "keys must be unique")
         XCTAssertEqual(TypeRegistry.readTypes.count, TypeRegistry.all.count)
-        XCTAssertEqual(TypeRegistry.groups.count, 8)
+        XCTAssertEqual(TypeRegistry.groups.count, 9)
         // Only the app's raison-d'être types warrant .immediate wakes.
         XCTAssertEqual(
             TypeRegistry.all.filter { $0.frequency == .immediate }.map(\.key),

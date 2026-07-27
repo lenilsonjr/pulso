@@ -24,6 +24,7 @@ enum TypeRegistry {
         static let gait = "Running & Gait"
         static let audio = "Audio Exposure"
         static let nutrition = "Nutrition"
+        static let lifestyle = "Lifestyle"
     }
 
     private static let bpm = HKUnit.count().unitDivided(by: .minute())
@@ -213,11 +214,20 @@ enum TypeRegistry {
                  group: Group.nutrition, unit: .count(), label: "count"),
     ]
 
+    private static let lifestyle: [SyncedType] = [
+        SyncedType(
+            key: "sexualActivity", displayName: "Sexual Activity", group: Group.lifestyle,
+            sampleType: HKCategoryType(.sexualActivity),
+            frequency: .hourly,
+            serialize: Serializers.sexualActivity
+        ),
+    ]
+
     // MARK: - Public surface
 
     static let all: [SyncedType] =
         sleepAndCircadian + workouts + energyAndActivity + cardioAndRecovery
-            + body + runningAndGait + audioExposure + nutrition
+            + body + runningAndGait + audioExposure + nutrition + lifestyle
 
     /// Group names in registry order, for UI sections.
     static let groups: [String] = {
