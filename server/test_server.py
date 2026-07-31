@@ -177,6 +177,16 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(body["heartRate"], "2026-07-06T08:00:00+01:00")
         self.assertNotIn("_deleted", body, "tombstones carry no timestamps")
 
+        # 'Z' suffix (zero UTC offset — Lisbon winter) must parse on every
+        # supported Python, and 10:00Z beats 05:00-04:00 (09:00Z).
+        self._post([{
+            "uuid": "ZULU-1", "type": "sleepAnalysis",
+            "start": "2026-07-06T09:00:00Z", "end": "2026-07-06T10:00:00Z",
+            "value": "awake", "source": "Watch",
+        }])
+        status, body = self._request("/latest")
+        self.assertEqual(body["sleepAnalysis"], "2026-07-06T10:00:00Z")
+
     def test_latest_survives_restart(self):
         self._post(SAMPLES)
         self.httpd.shutdown()

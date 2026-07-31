@@ -31,7 +31,9 @@ def _parse_end(value):
     if not isinstance(value, str):
         return None
     try:
-        parsed = datetime.fromisoformat(value)
+        # The app writes 'Z' at zero UTC offset (e.g. Lisbon in winter);
+        # fromisoformat only accepts 'Z' from Python 3.11.
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
     return parsed if parsed.tzinfo is not None else None
