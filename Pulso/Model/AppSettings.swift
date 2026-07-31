@@ -56,10 +56,9 @@ final class AppSettings {
 
     /// Where to POST, resolved at send time. nil = not configured yet.
     nonisolated static func currentTarget() -> (url: URL, token: String?)? {
-        let raw = UserDefaults.standard.string(forKey: SettingsKeys.endpoint) ?? ""
-        guard let base = baseURL(from: raw),
-              let url = URL(string: base.absoluteString + "/ingest") else { return nil }
-        return (url, Keychain.string(for: SettingsKeys.tokenAccount))
+        guard let base = currentBase(),
+              let url = URL(string: base.url.absoluteString + "/ingest") else { return nil }
+        return (url, base.token)
     }
 
     nonisolated static func currentBase() -> (url: URL, token: String?)? {
