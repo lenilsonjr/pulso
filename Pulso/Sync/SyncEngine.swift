@@ -27,10 +27,19 @@ enum CatchUp {
     /// server dedupes by uuid).
     static let margin: TimeInterval = 72 * 3600
 
-    static func cutoffs(fromLatest latest: [String: String]) -> [String: Date] {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return latest.compactMapValues { formatter.date(from: $0)?.addingTimeInterval(-margin) }
+    /// Timestamps are clamped to `now` before the margin is applied: a
+    /// future-dated server timestamp would otherwise produce an empty
+    /// bounded query that persists a store-wide anchor and permanently
+    /// skips the type's history.
+    static func cutoffs(fromLatest latest: [String: String], now: Date = Date()) -> [String: Date] {
+        let strict = ISO8601DateFormatter()
+        strict.formatOptions = [.withInternetDateTime]
+        let fractional = ISO8601DateFormatter()
+        fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return latest.compactMapValues { raw in
+            guard let parsed = strict.date(from: raw) ?? fractional.date(from: raw) else { return nil }
+            return min(parsed, now).addingTimeInterval(-margin)
+        }
     }
 }
 
@@ -52,6 +61,15 @@ actor SyncEngine {
     private let latestHints: @Sendable () async -> [String: String]?
     private var anchorCache: [String: HKQueryAnchor] = [:]
     private var chain: Task<Void, Never>?
+    /// Types whose query threw last time (typically authorization not yet
+    /// granted for a newly added type). They must not hold the catch-up
+    /// gate open on every background wake; cleared on user-visible passes
+    /// so a grant is picked up promptly.
+    private var authBlocked: Set<String> = []
+    /// GET /latest result (including failure) cached briefly so background
+    /// wakes don't pay a network round-trip per pass.
+    private var latestFetch: (at: Date, hints: [String: String]?)?
+    private static let latestCacheInterval: TimeInterval = 15 * 60
 
     init(
         healthStore: HKHealthStore, anchors: AnchorStore, outbox: Outbox,
@@ -86,15 +104,42 @@ actor SyncEngine {
         await status.setSyncing(true)
         let enabled = AppSettings.currentEnabledTypes()
 
+        // A user-visible pass may follow a permission grant — retry types
+        // that were failing. Background wakes keep them excluded.
+        switch reason {
+        case .manual, .foreground, .settingsChanged, .reimport:
+            authBlocked.removeAll()
+        case .observer, .backgroundRefresh:
+            break
+        }
+
+        // Resolve every anchor exactly once; the catch-up gate and the
+        // cutoff application below both derive from this resolution. (An
+        // anchor file that exists but fails to decode counts as missing —
+        // it must trigger catch-up, not an unbounded full read.)
+        var resolvedAnchors: [String: HKQueryAnchor] = [:]
+        for type in enabled {
+            if let anchor = anchorCache[type.key] ?? anchors.load(type.key) {
+                resolvedAnchors[type.key] = anchor
+            }
+        }
+        let missing = enabled.map(\.key).filter { resolvedAnchors[$0] == nil && !authBlocked.contains($0) }
+
         // Catch-up: for types with no anchor (fresh install, newly enabled),
         // ask the server what it already has and skip re-reading history.
-        // A full re-import must bypass this, or it couldn't re-send.
+        // A full re-import must bypass this, or it couldn't re-send — and
+        // the bypass must be durable state, not just this pass's reason:
+        // an interleaved or resumed pass would otherwise catch-up against
+        // the fully-populated server and defeat the re-import.
         var cutoffs: [String: Date] = [:]
-        if case .reimport = reason {
-            // no cutoffs — read everything
-        } else if enabled.contains(where: { anchorCache[$0.key] == nil && !anchors.hasAnchor($0.key) }) {
-            if let latest = await latestHints() {
-                cutoffs = CatchUp.cutoffs(fromLatest: latest)
+        let reimporting = UserDefaults.standard.bool(forKey: SettingsKeys.reimportPending)
+        if !reimporting && !missing.isEmpty {
+            if let latest = await cachedLatestHints() {
+                let parsed = CatchUp.cutoffs(fromLatest: latest)
+                if parsed.count < latest.count {
+                    await log.warn("server /latest: \(latest.count - parsed.count) unparseable timestamp(s) ignored")
+                }
+                cutoffs = parsed.filter { missing.contains($0.key) }
                 if !cutoffs.isEmpty {
                     await log.info("server /latest: catching up instead of full backfill for \(cutoffs.count) type(s)")
                 }
@@ -102,12 +147,19 @@ actor SyncEngine {
         }
 
         var queued = 0
+        var anyFailed = false
         for type in enabled {
             do {
-                queued += try await sync(type, cutoffs: cutoffs)
+                queued += try await sync(type, anchor: resolvedAnchors[type.key], cutoffs: cutoffs)
             } catch {
+                anyFailed = true
+                authBlocked.insert(type.key)
                 await log.error("\(type.key): \(error.localizedDescription)")
             }
+        }
+        if reimporting && !anyFailed {
+            UserDefaults.standard.set(false, forKey: SettingsKeys.reimportPending)
+            await log.info("full re-import pass completed for all enabled types")
         }
         let force: Bool
         switch reason {
@@ -121,8 +173,17 @@ actor SyncEngine {
         }
     }
 
-    private func sync(_ type: SyncedType, cutoffs: [String: Date] = [:]) async throws -> Int {
-        var anchor = anchorCache[type.key] ?? anchors.load(type.key)
+    private func cachedLatestHints() async -> [String: String]? {
+        if let cached = latestFetch, Date().timeIntervalSince(cached.at) < Self.latestCacheInterval {
+            return cached.hints
+        }
+        let hints = await latestHints()
+        latestFetch = (Date(), hints)
+        return hints
+    }
+
+    private func sync(_ type: SyncedType, anchor resolvedAnchor: HKQueryAnchor?, cutoffs: [String: Date]) async throws -> Int {
+        var anchor = resolvedAnchor
         // Date-bounding a nil-anchor query skips the historical read while
         // still returning a store-wide anchor, so later incremental syncs
         // (which drop the predicate) see every subsequent change.
@@ -189,5 +250,7 @@ actor SyncEngine {
 
     func resetAllAnchors() {
         anchorCache = [:]
+        authBlocked = []
+        latestFetch = nil
     }
 }

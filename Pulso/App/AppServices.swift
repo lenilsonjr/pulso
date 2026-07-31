@@ -120,9 +120,9 @@ final class AppServices {
             status.authNeeded = request == .shouldRequest
         } catch {
             // Typically a signing problem (missing HealthKit entitlement) —
-            // surface it, or "no permission" becomes indistinguishable from a
-            // build issue.
-            status.authNeeded = false
+            // surface it, and keep the last known authNeeded rather than
+            // clearing it: hiding the Grant button on a transient error
+            // would strand newly added types with no way to authorize them.
             await log.warn("could not determine Health authorization status: \(error.localizedDescription)")
         }
     }
@@ -145,6 +145,10 @@ final class AppServices {
     /// Uses .reimport so the server catch-up shortcut is bypassed; if the
     /// pass is interrupted, tap Re-import again to restart it.
     func reimportAll() async {
+        // Durable flag first: any pass that runs from here on (including an
+        // interleaved observer pass, or a resumed pass after the app is
+        // killed mid-import) must not take the catch-up shortcut.
+        UserDefaults.standard.set(true, forKey: SettingsKeys.reimportPending)
         await log.warn("full re-import requested — clearing anchors and outbox")
         await outbox.removeAll()
         anchors.clearAll()

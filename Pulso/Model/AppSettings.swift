@@ -6,6 +6,11 @@ enum SettingsKeys {
     static let enabledTypes = "types.enabled"
     static let tokenAccount = "server-token"
     static let outboxSequence = "outbox.seq"
+    /// True from the moment a full re-import is requested until a sync pass
+    /// covers every enabled type without error. While set, the /latest
+    /// catch-up shortcut is disabled so the re-import cannot be defeated by
+    /// an interleaved or resumed pass.
+    static let reimportPending = "sync.reimportPending"
 }
 
 /// User configuration. The @Observable instance drives the UI; the static

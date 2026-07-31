@@ -127,21 +127,30 @@ final class WireFormatTests: XCTestCase {
     }
 
     func testCatchUpCutoffs() {
+        // Fixed clock: one day after the newest legitimate timestamp.
+        let now = Date(timeIntervalSince1970: 1_784_102_580 + 86_400)
         let latest = [
             "sleepAnalysis": "2026-07-15T09:03:00+01:00",
             "heartRate": "2026-07-15T05:00:00-04:00",
+            "fractional": "2026-07-15T09:03:00.500+01:00",
+            "futureDated": "2028-01-01T00:00:00Z",
             "broken": "not a date",
         ]
-        let cutoffs = CatchUp.cutoffs(fromLatest: latest)
+        let cutoffs = CatchUp.cutoffs(fromLatest: latest, now: now)
         // 72h margin, computed in absolute time: 09:03+01:00 == 08:03Z.
         XCTAssertEqual(
             cutoffs["sleepAnalysis"],
             Date(timeIntervalSince1970: 1_784_102_580 - 72 * 3600)
         )
-        XCTAssertEqual(cutoffs.count, 2, "unparseable timestamps are dropped, not fatal")
+        XCTAssertEqual(cutoffs.count, 4, "unparseable timestamps are dropped, not fatal")
         XCTAssertNil(cutoffs["broken"])
         let sleep = cutoffs["sleepAnalysis"]!, heart = cutoffs["heartRate"]!
         XCTAssertEqual(heart.timeIntervalSince(sleep), 3420, "offsets must normalize to absolute time")
+        // Fractional seconds parse via the lenient fallback.
+        XCTAssertEqual(cutoffs["fractional"]!.timeIntervalSince(sleep), 0.5, accuracy: 0.001)
+        // A future-dated server timestamp is clamped to `now` so the
+        // bounded query can never skip real history.
+        XCTAssertEqual(cutoffs["futureDated"], now.addingTimeInterval(-72 * 3600))
     }
 
     func testBaseURLParsing() {
