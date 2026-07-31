@@ -84,11 +84,24 @@ history. Servers compare timestamps in **absolute time** — offsets vary
 across the archive, so string comparison picks wrong maxima.
 
 The endpoint is optional: on any non-200 the app falls back to a full
-backfill, which the server's uuid dedupe makes safe. Two costs of relying
-on it: samples backfilled by a source more than 72 hours late are skipped
-until a manual re-import, and deletions older than the catch-up point are
-not tombstoned. The app's "Re-import Full History" always bypasses
-`/latest`.
+backfill, which the server's uuid dedupe makes safe. Four costs of relying
+on it:
+
+- Samples backfilled by a source more than 72 hours late are skipped until
+  a manual re-import.
+- Deletions older than the catch-up point are not tombstoned.
+- The reported timestamps are a high-water mark that never rewinds: if the
+  newest samples of a type were later deleted, `/latest` overshoots and
+  the catch-up window starts later than the surviving data would suggest.
+- The mark is **global, with no device identity**: a second device — or one
+  restored from a backup — whose local HealthKit store holds samples the
+  server never received will silently skip everything older than the
+  cutoff on its first sync (those samples have distinct uuids, so dedupe
+  cannot recover them). After restoring a device or pointing an additional
+  device at an existing server, run the app's "Re-import Full History"
+  once.
+
+The app's "Re-import Full History" always bypasses `/latest`.
 
 ## Sample object schema
 

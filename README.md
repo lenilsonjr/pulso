@@ -20,9 +20,11 @@ outages — to an HTTP endpoint you configure. Self-hosted personal telemetry.
 
 - All data flows **device → your server**. There is no cloud, no account, no
   analytics, no telemetry, and no third-party code (zero dependencies).
-- The app makes exactly **two kinds of network calls**, both to the server
-  you configure: `POST /ingest` (your health samples) and `GET /health` (the
-  "Test Connection" button). Nothing else, ever.
+- The app makes exactly **three kinds of network calls**, all to the server
+  you configure: `POST /ingest` (your health samples), `GET /health` (the
+  "Test Connection" button), and `GET /latest` (asks your server what it
+  already holds, so a reinstall doesn't re-send all history). Nothing else,
+  ever.
 - Pending data on the device is excluded from device backups.
 - The optional bearer token is stored in the iOS Keychain.
 
@@ -140,6 +142,12 @@ transport.
 Anchored queries surface deletions; Pulso ships them as tombstones
 (`{"deleted": [uuids]}`) and the reference server records them in
 `_deleted.ndjson`.
+
+**I restored my phone from a backup / added a second device — is my data complete?**
+Run Settings → Re-import Full History once. Fresh installs normally skip
+history the server already has (via `GET /latest`), but that check has no
+per-device awareness — samples that only exist on the "new" device and
+predate the server's newest data would otherwise be skipped.
 
 **Workout GPS routes? ECG? Writing data back?**
 Out of scope for v1. Routes (`HKWorkoutRoute`) are the most likely v2 item.
