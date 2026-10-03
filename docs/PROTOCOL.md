@@ -2,7 +2,7 @@
 
 The contract between the Pulso iOS app and any receiving server. It is
 deliberately small: a conforming server fits in ~50 lines of any language.
-The reference implementation lives in [`server/server.py`](../server/server.py).
+The reference implementation lives in [`server/`](../server/).
 
 v1 is frozen. New *optional* sample fields may be added over time (additive
 changes only); anything breaking becomes `/v2/ingest`.
@@ -279,7 +279,7 @@ that mistake.
 
 ## Reference server storage (informative)
 
-`server/server.py` appends each element to `data/<type>.ndjson` (tombstones
+The reference server appends each element to `data/<type>.ndjson` (tombstones
 to `data/_deleted.ndjson`), one JSON object per line, adding a `receivedAt`
 field with the server's local time. Inspect with `cat`, `jq`, or anything
 that reads lines.
