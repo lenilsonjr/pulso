@@ -924,6 +924,36 @@ fn an_index_in_use_cannot_be_shared() {
 }
 
 #[test]
+fn latest_follows_lines_added_to_the_files_while_the_server_runs() {
+    let ws = Workspace::new();
+    let server = ws.start();
+    server.ingest(&samples());
+    let mut heart = fs::OpenOptions::new()
+        .append(true)
+        .open(ws.file("heartRate"))
+        .unwrap();
+    writeln!(
+        heart,
+        "{}",
+        sample("HAND", "heartRate", "2026-07-20T08:00:00+01:00")
+    )
+    .unwrap();
+    drop(heart);
+
+    // The next ingest finds the line, even though it stores nothing new.
+    assert_eq!(server.ingest(&samples()), (3, 0, 0));
+    assert_eq!(server.latest()["heartRate"], "2026-07-20T08:00:00+01:00");
+    assert_eq!(
+        server.ingest(&json!([sample(
+            "HAND",
+            "heartRate",
+            "2026-07-20T08:00:00+01:00"
+        )])),
+        (1, 0, 0)
+    );
+}
+
+#[test]
 fn a_killed_server_recovers_what_it_had_not_indexed() {
     let ws = Workspace::new();
     let server = ws.start();

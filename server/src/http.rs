@@ -160,18 +160,18 @@ fn ingest_body(app: &App, body: Vec<u8>, gzip: bool) -> Reply {
     drop(body);
 
     let mut store = app.store.lock().unwrap_or_else(PoisonError::into_inner);
-    let counts = match store.commit(&batch, &stamp) {
+    let committed = store.commit(&batch, &stamp);
+    // Catching up with the files at the start of a commit can move /latest
+    // even when the commit stores nothing, or fails.
+    publish_latest(app, &store);
+    drop(store);
+    let counts = match committed {
         Ok(counts) => counts,
         Err(error) => {
             log_error(&format!("ingest failed: {error}"));
             return reply(500, STORAGE);
         }
     };
-    if counts.new > 0 {
-        *app.latest.write().unwrap_or_else(PoisonError::into_inner) =
-            Bytes::from(store.latest_json());
-    }
-    drop(store);
 
     let summary = format!(
         "received={} new={} deleted={}",
@@ -182,6 +182,14 @@ fn ingest_body(app: &App, body: Vec<u8>, gzip: bool) -> Reply {
         counts.received, counts.new, counts.deleted
     );
     (json(200, body), summary)
+}
+
+fn publish_latest(app: &App, store: &Store) {
+    let latest = store.latest_json();
+    let mut published = app.latest.write().unwrap_or_else(PoisonError::into_inner);
+    if published.as_ref() != latest.as_bytes() {
+        *published = Bytes::from(latest);
+    }
 }
 
 enum Gunzip {
