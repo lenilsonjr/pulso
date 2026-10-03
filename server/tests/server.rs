@@ -1288,6 +1288,117 @@ fn paths_are_matched_exactly() {
 }
 
 #[test]
+fn a_connection_can_be_reused_for_several_requests() {
+    let ws = Workspace::new();
+    let server = ws.start();
+    let mut stream = TcpStream::connect(("127.0.0.1", server.port)).unwrap();
+    stream
+        .set_read_timeout(Some(Duration::from_secs(30)))
+        .unwrap();
+    let mut reader = BufReader::new(stream.try_clone().unwrap());
+
+    let mut exchange = |request: String, body: &[u8]| {
+        stream.write_all(request.as_bytes()).unwrap();
+        stream.write_all(body).unwrap();
+        let mut head = String::new();
+        let mut length = 0;
+        loop {
+            let mut line = String::new();
+            reader.read_line(&mut line).unwrap();
+            if line == "\r\n" {
+                break;
+            }
+            if let Some(value) = line.to_ascii_lowercase().strip_prefix("content-length:") {
+                length = value.trim().parse().unwrap();
+            }
+            head.push_str(&line);
+        }
+        let mut body = vec![0; length];
+        reader.read_exact(&mut body).unwrap();
+        (
+            head.lines().next().unwrap().to_owned(),
+            String::from_utf8(body).unwrap(),
+        )
+    };
+
+    let body = serde_json::to_vec(&samples()).unwrap();
+    let post = format!(
+        "POST /ingest HTTP/1.1\r\nHost: x\r\nAuthorization: Bearer secret\r\nContent-Length: {}\r\n\r\n",
+        body.len()
+    );
+    assert_eq!(
+        exchange("GET /health HTTP/1.1\r\nHost: x\r\n\r\n".into(), b"").0,
+        "HTTP/1.1 200 OK"
+    );
+    let (status, reply) = exchange(post.clone(), &body);
+    assert_eq!(
+        (status.as_str(), reply.as_str()),
+        (
+            "HTTP/1.1 200 OK",
+            r#"{"received": 3, "new": 2, "deleted": 2}"#
+        )
+    );
+    let (status, reply) = exchange(post, &body);
+    assert_eq!(
+        (status.as_str(), reply.as_str()),
+        (
+            "HTTP/1.1 200 OK",
+            r#"{"received": 3, "new": 0, "deleted": 0}"#
+        )
+    );
+    let (status, reply) = exchange(
+        "GET /latest HTTP/1.1\r\nHost: x\r\nAuthorization: Bearer secret\r\n\r\n".into(),
+        b"",
+    );
+    assert_eq!(status, "HTTP/1.1 200 OK");
+    assert!(reply.contains("sleepAnalysis"), "{reply}");
+}
+
+#[test]
+fn http_1_0_clients_are_served() {
+    let ws = Workspace::new();
+    let server = ws.start();
+    let reply = server.send(b"GET /health HTTP/1.0\r\n\r\n");
+    assert_eq!(reply.status, 200);
+    assert_eq!(reply.json()["status"], "ok");
+}
+
+#[test]
+fn identical_batches_sent_at_once_are_stored_once() {
+    let ws = Workspace::new();
+    let server = ws.start();
+    let elements: Vec<Value> = (0..2000)
+        .map(|n| {
+            sample(
+                &format!("C{n}"),
+                if n % 2 == 0 { "a" } else { "b" },
+                "2026-07-06T08:00:00Z",
+            )
+        })
+        .collect();
+    let body = serde_json::to_vec(&elements).unwrap();
+
+    let new: Vec<u64> = thread::scope(|scope| {
+        let threads: Vec<_> = (0..6)
+            .map(|_| {
+                scope.spawn(|| {
+                    server.post_bytes(&body, false, Some(TOKEN)).json()["new"]
+                        .as_u64()
+                        .unwrap()
+                })
+            })
+            .collect();
+        threads.into_iter().map(|t| t.join().unwrap()).collect()
+    });
+    assert_eq!(
+        new.iter().sum::<u64>(),
+        2000,
+        "each sample is new to exactly one request: {new:?}"
+    );
+    assert_eq!(ws.lines("a").len() + ws.lines("b").len(), 2000);
+}
+
+#[test]
 fn the_token_is_compared_whole() {
     let ws = Workspace::new();
     let server = ws.start();

@@ -192,12 +192,16 @@ enum Gunzip {
 /// Only the first gzip member is read, and a stream that runs past the size
 /// limit is refused rather than inflated.
 fn gunzip(compressed: &[u8]) -> Result<Vec<u8>, Gunzip> {
+    gunzip_up_to(compressed, MAX_BODY)
+}
+
+fn gunzip_up_to(compressed: impl Read, limit: usize) -> Result<Vec<u8>, Gunzip> {
     let mut plain = Vec::new();
     match GzDecoder::new(compressed)
-        .take(MAX_BODY as u64 + 1)
+        .take(limit as u64 + 1)
         .read_to_end(&mut plain)
     {
-        Ok(_) if plain.len() > MAX_BODY => Err(Gunzip::TooLarge),
+        Ok(_) if plain.len() > limit => Err(Gunzip::TooLarge),
         Ok(_) => Ok(plain),
         Err(_) => Err(Gunzip::Invalid),
     }
@@ -321,6 +325,48 @@ mod tests {
         let n = bad_crc.len();
         bad_crc[n - 6] ^= 0xff;
         assert!(matches!(gunzip(&bad_crc), Err(Gunzip::Invalid)));
+    }
+
+    #[test]
+    fn gunzip_stops_inflating_at_the_limit() {
+        use flate2::{Compression, write::GzEncoder};
+        struct Counting<'a> {
+            data: &'a [u8],
+            read: usize,
+        }
+        impl Read for Counting<'_> {
+            fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+                let n = self.data.read(buf)?;
+                self.read += n;
+                Ok(n)
+            }
+        }
+
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::fast());
+        let zeros = vec![0u8; 1 << 20];
+        for _ in 0..256 {
+            encoder.write_all(&zeros).unwrap();
+        }
+        let bomb = encoder.finish().unwrap();
+
+        let mut input = Counting {
+            data: &bomb,
+            read: 0,
+        };
+        assert!(matches!(
+            gunzip_up_to(&mut input, 1 << 20),
+            Err(Gunzip::TooLarge)
+        ));
+        assert!(
+            input.read < bomb.len() / 4,
+            "read {} of {} compressed bytes for a limit of 1 MiB out of 256 MiB",
+            input.read,
+            bomb.len()
+        );
+        assert_eq!(
+            gunzip_up_to(&bomb[..], 256 << 20).ok().unwrap().len(),
+            256 << 20
+        );
     }
 
     #[test]

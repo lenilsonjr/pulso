@@ -104,6 +104,37 @@ fn a_commit_appends_what_is_new_and_counts_it() {
 }
 
 #[test]
+fn the_state_file_covers_every_commit() {
+    let fx = Fixture::new();
+    let mut store = fx.open();
+    commit(&mut store, SAMPLES);
+    let read_state = || -> Value {
+        serde_json::from_slice(&fs::read(fx.dirs.index.join("state.json")).unwrap()).unwrap()
+    };
+
+    let state = read_state();
+    for stem in ["sleepAnalysis", "heartRate", TOMBSTONES] {
+        assert_eq!(
+            state["files"][stem],
+            fs::metadata(fx.file(stem)).unwrap().len(),
+            "{stem}"
+        );
+    }
+    assert_eq!(state["latest"]["heartRate"], "2026-07-06T08:00:00+01:00");
+
+    commit(
+        &mut store,
+        &format!("[{}]", sample("MORE", "heartRate", "2026-07-07T08:00:00Z")),
+    );
+    let state = read_state();
+    assert_eq!(
+        state["files"]["heartRate"],
+        fs::metadata(fx.file("heartRate")).unwrap().len()
+    );
+    assert_eq!(state["latest"]["heartRate"], "2026-07-07T08:00:00Z");
+}
+
+#[test]
 fn sending_a_batch_again_changes_nothing() {
     let fx = Fixture::new();
     let mut store = fx.open();
@@ -384,27 +415,19 @@ fn reindex_leaves_the_index_invalid_if_it_stops_half_way() {
     let mut store = fx.open();
     commit(&mut store, SAMPLES);
     drop(store);
-    // A data file that cannot be read stops the run after the old state is removed.
-    fs::create_dir_all(&fx.dirs.data).unwrap();
-    fs::set_permissions(
-        fx.file("heartRate"),
-        std::os::unix::fs::PermissionsExt::from_mode(0o000),
-    )
-    .unwrap();
-    if File::open(fx.file("heartRate")).is_ok() {
-        return; // running as a user that ignores file permissions
-    }
+    // A file where the work directory must go stops the run after the old state is removed.
+    fs::write(fx.dirs.index.join("rebuild"), "in the way").unwrap();
     assert!(reindex(&fx.dirs).is_err());
     assert!(!fx.dirs.index.join("state.json").exists());
-    fs::set_permissions(
-        fx.file("heartRate"),
-        std::os::unix::fs::PermissionsExt::from_mode(0o644),
-    )
-    .unwrap();
     assert!(matches!(
         Store::open(&fx.dirs).err().unwrap(),
         Error::NeedsReindex(_)
     ));
+
+    fs::remove_file(fx.dirs.index.join("rebuild")).unwrap();
+    reindex(&fx.dirs).unwrap();
+    let mut store = fx.open();
+    assert_eq!(commit(&mut store, SAMPLES), (3, 0, 0));
 }
 
 #[test]
