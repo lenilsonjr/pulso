@@ -10,5 +10,5 @@ build/
 # Reference server data
 server/data/
 
-# Python
-__pycache__/
+# Rust
+target/
