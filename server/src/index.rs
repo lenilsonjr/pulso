@@ -16,6 +16,8 @@ use std::path::{Path, PathBuf};
 
 use memmap2::{Advice, Mmap};
 
+use crate::error::ignore_not_found;
+
 pub type Key = [u8; 16];
 
 pub const MERGE_AT: usize = 65_536;
@@ -42,7 +44,7 @@ impl KeySet {
     /// An empty set, replacing whatever the files held.
     pub fn create_empty(dir: &Path, name: &str) -> io::Result<KeySet> {
         let (sorted_path, tail_path) = paths(dir, name);
-        remove_if_exists(&partial_path(&sorted_path))?;
+        ignore_not_found(fs::remove_file(partial_path(&sorted_path)))?;
         File::create(&sorted_path)?.sync_all()?;
         File::create(&tail_path)?.sync_all()?;
         sync_dir(dir)?;
@@ -56,7 +58,7 @@ impl KeySet {
     fn open_with(dir: &Path, name: &str, merge_at: usize) -> io::Result<KeySet> {
         let (sorted_path, tail_path) = paths(dir, name);
         // A merge that stopped before its rename leaves a half-written file.
-        remove_if_exists(&partial_path(&sorted_path))?;
+        ignore_not_found(fs::remove_file(partial_path(&sorted_path)))?;
         let sorted = map_sorted(&sorted_path)?;
 
         let mut tail_file = OpenOptions::new()
@@ -227,13 +229,6 @@ fn map_sorted(path: &Path) -> io::Result<Option<Mmap>> {
     // Lookups touch scattered pages; read-ahead would only fill the cache.
     let _ = map.advise(Advice::Random);
     Ok(Some(map))
-}
-
-fn remove_if_exists(path: &Path) -> io::Result<()> {
-    match fs::remove_file(path) {
-        Err(error) if error.kind() != io::ErrorKind::NotFound => Err(error),
-        _ => Ok(()),
-    }
 }
 
 /// Makes a rename or file creation in `dir` durable.

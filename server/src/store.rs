@@ -19,7 +19,7 @@ use std::time::Instant;
 use serde_json::{Map, Value, json};
 
 use crate::config::Dirs;
-use crate::error::{Context, Error, Result};
+use crate::error::{Context, Error, Result, ignore_not_found};
 use crate::index::{Key, KeySet, key_of, sync_dir};
 use crate::ingest::{Batch, Item};
 use crate::isotime::parse_instant;
@@ -377,27 +377,12 @@ pub fn reindex(dirs: &Dirs) -> Result<Summary> {
     let _lock = lock_index(&dirs.index)?;
     let on_disk = list_data(&dirs.data)?;
 
-    match fs::remove_file(dirs.index.join(STATE_FILE)) {
-        Err(error) if error.kind() != io::ErrorKind::NotFound => {
-            return Err(Error::Io {
-                context: "remove the old index state".into(),
-                source: error,
-            });
-        }
-        _ => {}
-    }
+    ignore_not_found(fs::remove_file(dirs.index.join(STATE_FILE)))
+        .context(|| "remove the old index state".to_owned())?;
     sync_dir(&dirs.index).context(|| format!("sync {}", dirs.index.display()))?;
 
     let work = dirs.index.join("rebuild");
-    match fs::remove_dir_all(&work) {
-        Err(error) if error.kind() != io::ErrorKind::NotFound => {
-            return Err(Error::Io {
-                context: format!("clear {}", work.display()),
-                source: error,
-            });
-        }
-        _ => {}
-    }
+    ignore_not_found(fs::remove_dir_all(&work)).context(|| format!("clear {}", work.display()))?;
     fs::create_dir(&work).context(|| format!("create {}", work.display()))?;
 
     let mut seen = Builder::new(&work, "seen")?;
