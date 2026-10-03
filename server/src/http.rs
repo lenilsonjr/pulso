@@ -213,7 +213,7 @@ async fn read_body(mut body: Incoming, length: usize) -> Result<Vec<u8>, hyper::
     Ok(bytes)
 }
 
-/// The Content-Length header as the Python server read it: absent or unreadable is 0.
+/// A missing or unreadable Content-Length counts as 0.
 fn declared_length(headers: &HeaderMap) -> i64 {
     headers
         .get(header::CONTENT_LENGTH)

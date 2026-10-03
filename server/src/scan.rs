@@ -9,8 +9,8 @@ use std::path::Path;
 
 use serde::de::{Deserialize, Deserializer, IgnoredAny, MapAccess, SeqAccess, Visitor};
 
-/// A stored line seen the way the Python server read it: a repeated key keeps
-/// its last value, and a field of the wrong type counts as absent.
+/// A stored line as it is read back: a repeated key keeps its last value, and
+/// a field of the wrong type counts as absent.
 pub struct Fields<'a> {
     pub uuid: Option<Cow<'a, str>>,
     pub end: Option<Cow<'a, str>>,

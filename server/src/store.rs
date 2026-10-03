@@ -128,7 +128,8 @@ impl Store {
         Ok(store)
     }
 
-    /// `/latest` as the Python server wrote it: one flat object of type to timestamp.
+    /// The body of `GET /latest`: one flat object of type to timestamp, spaced
+    /// as Python's `json.dumps` spaces it, which replies have always been.
     pub fn latest_json(&self) -> String {
         let mut out = vec![b'{'];
         for (i, (stem, newest)) in self.latest.iter().enumerate() {
