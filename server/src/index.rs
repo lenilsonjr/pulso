@@ -122,7 +122,7 @@ impl KeySet {
     /// Adds the keys that are not in the set yet. `candidates` may repeat keys.
     pub fn add(&mut self, mut candidates: Vec<Key>) -> io::Result<()> {
         if candidates.len() >= self.merge_at {
-            // A merge is due anyway; sorting in place spares a hash set of every candidate.
+            // Sort in place and merge: a hash set of this many keys would cost tens of MiB.
             candidates.sort_unstable();
             candidates.dedup();
             return self.absorb_sorted(&candidates);
