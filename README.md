@@ -78,11 +78,11 @@ toggled individually in Settings.
 ### 1. Run a server
 
 Anything that speaks [the protocol](docs/PROTOCOL.md) works. The reference
-server is a single stdlib-only Python file that appends NDJSON to disk:
+server is a single Rust binary that appends NDJSON to disk:
 
 ```sh
-python3 server/server.py                          # port 8787, ./data, no auth
-PULSO_TOKEN=secret python3 server/server.py       # require a bearer token
+cargo build --release                             # binary: target/release/pulso-server
+PULSO_TOKEN=secret PULSO_BIND=0.0.0.0 target/release/pulso-server   # port 8787, ./data
 ```
 
 or with Docker:
@@ -157,7 +157,7 @@ Out of scope for v1. Routes (`HKWorkoutRoute`) are the most likely v2 item.
 ```
 Pulso/            the iOS app (SwiftUI, zero dependencies)
 PulsoTests/       unit tests (serializers, outbox state machine, gzip, wire format)
-server/           reference receiver (single-file Python, stdlib only) + Dockerfile
+server/           reference receiver (Rust) + Dockerfile
 docs/PROTOCOL.md  the versioned app↔server contract
 ```
 

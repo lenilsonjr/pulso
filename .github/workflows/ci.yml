@@ -7,12 +7,31 @@ on:
 
 jobs:
   server:
-    name: Reference server tests
+    name: Server tests & static build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Run server test suite
-        run: python3 server/test_server.py
+      - name: Install Rust with the musl target
+        run: |
+          rustup update stable --no-self-update
+          rustup default stable
+          rustup target add x86_64-unknown-linux-musl
+      - name: Run unit and integration tests
+        run: cargo test --locked
+      - name: Build the static release binary
+        run: cargo build --release --locked --target x86_64-unknown-linux-musl
+      - name: Check the binary is static
+        run: |
+          bin=target/x86_64-unknown-linux-musl/release/pulso-server
+          if readelf -lW "$bin" | grep -q INTERP; then
+            echo "$bin asks for a dynamic loader" >&2
+            exit 1
+          fi
+          ldd "$bin" 2>&1 | grep -Eq 'statically linked|not a dynamic executable'
+      - name: Run the integration tests against the static binary
+        run: >
+          PULSO_TEST_BIN="$PWD/target/x86_64-unknown-linux-musl/release/pulso-server"
+          cargo test --locked --test server
 
   app:
     name: App build & unit tests

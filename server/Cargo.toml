@@ -1,0 +1,24 @@
+[package]
+name = "pulso-server"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+description = "Pulso reference server: receives health samples and appends them to NDJSON files"
+license = "MIT"
+publish = false
+
+[dependencies]
+bytes = "1"
+flate2 = "1"
+http-body-util = "0.1"
+hyper = { version = "1", default-features = false, features = ["http1", "server"] }
+hyper-util = { version = "0.1", default-features = false, features = ["tokio"] }
+libc = "0.2"
+memmap2 = "0.9"
+serde = "1"
+serde_json = { version = "1", features = ["float_roundtrip", "preserve_order"] }
+tokio = { version = "1", default-features = false, features = ["net", "rt-multi-thread", "time"] }
+xxhash-rust = { version = "0.8", default-features = false, features = ["xxh3"] }
+
+[dev-dependencies]
+tempfile = "3"
