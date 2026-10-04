@@ -138,7 +138,8 @@ impl KeySet {
         self.tail_file.set_len(0)?;
         self.tail_file.sync_data()?;
         self.tail_bytes = 0;
-        self.tail.clear();
+        // Not `clear()`: that keeps the capacity a big add grew the table to.
+        self.tail = HashSet::new();
         Ok(())
     }
 
@@ -308,6 +309,23 @@ mod tests {
         drop(set);
         let set = KeySet::open_with(dir.path(), "seen", 4).unwrap();
         assert!((1..=8).all(|n| set.contains(&key(n))) && !set.contains(&key(9)));
+    }
+
+    #[test]
+    fn a_merge_gives_back_the_room_the_tail_grew_to() {
+        let dir = tempfile::tempdir().unwrap();
+        KeySet::create_empty(dir.path(), "seen").unwrap();
+        let mut set = KeySet::open_with(dir.path(), "seen", 4).unwrap();
+        let many: Vec<Key> = (0..1_000).map(key).collect();
+
+        set.add_new(&many).unwrap();
+        assert!(set.tail.is_empty());
+        assert!(
+            set.tail.capacity() < many.len(),
+            "the tail kept room for {} keys",
+            set.tail.capacity()
+        );
+        assert!(many.iter().all(|key| set.contains(key)));
     }
 
     #[test]
