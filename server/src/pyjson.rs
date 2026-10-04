@@ -87,7 +87,22 @@ fn write_number(out: &mut Vec<u8>, number: &Number) {
 /// Python's `repr(float)`: the shortest digits that round-trip, in positional
 /// notation unless the decimal exponent is below -4 or above 15.
 fn write_f64(out: &mut Vec<u8>, value: f64) {
-    let scientific = format!("{value:e}");
+    let shortest = format!("{value:e}");
+    // When two shortest candidates are equally close to the value, Rust picks
+    // the larger and Python the one with an even last digit. The same number
+    // of digits, correctly rounded, is Python's pick whenever it reads back
+    // as `value`; otherwise only the other candidate does.
+    let digits = shortest
+        .bytes()
+        .take_while(|b| *b != b'e')
+        .filter(u8::is_ascii_digit)
+        .count();
+    let rounded = format!("{value:.precision$e}", precision = digits - 1);
+    let scientific = if rounded.parse::<f64>() == Ok(value) {
+        rounded
+    } else {
+        shortest
+    };
     let (mantissa, exponent) = scientific
         .split_once('e')
         .expect("{:e} always has an exponent");
@@ -210,6 +225,26 @@ mod tests {
             (r#""\u00e9\u65e5\u672c\ud83d\ude00""#, "\"é日本😀\""),
             (r#""\u2028\u2029""#, "\"\u{2028}\u{2029}\""),
             ("\"\u{2028}\u{2029}\"", "\"\u{2028}\u{2029}\""),
+        ];
+        for (input, expected) in cases {
+            assert_eq!(rewrite(input), *expected, "input {input}");
+        }
+    }
+
+    /// Two shortest candidates equally close to the value: Python takes the
+    /// one with an even last digit, which is not always the larger one.
+    #[test]
+    fn rounds_a_tie_between_shortest_digits_to_even_like_python() {
+        let cases: &[(&str, &str)] = &[
+            ("994693620776.03125", "994693620776.0312"),
+            ("994693620776.09375", "994693620776.0938"),
+            ("994693620776.15625", "994693620776.1562"),
+            ("994693620776.21875", "994693620776.2188"),
+            ("9000.0001220703125", "9000.000122070312"),
+            ("9000.0003662109375", "9000.000366210938"),
+            ("1315490761899226.25", "1315490761899226.2"),
+            ("-1315490761899226.25", "-1315490761899226.2"),
+            ("1315490761899226.75", "1315490761899226.8"),
         ];
         for (input, expected) in cases {
             assert_eq!(rewrite(input), *expected, "input {input}");
