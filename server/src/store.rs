@@ -267,7 +267,7 @@ impl Store {
         let mut changed = false;
         for (stem, len) in &on_disk {
             if self.covered.get(stem).copied().unwrap_or(0) != *len {
-                self.catch_up(stem)?;
+                self.catch_up(stem, CHUNK)?;
                 changed = true;
             }
         }
@@ -277,7 +277,7 @@ impl Store {
         Ok(())
     }
 
-    fn catch_up(&mut self, stem: &str) -> Result<()> {
+    fn catch_up(&mut self, stem: &str, chunk: usize) -> Result<()> {
         let path = data_path(&self.data, stem);
         let from = self.covered.get(stem).copied().unwrap_or(0);
         let tombstones = stem == TOMBSTONES;
@@ -299,7 +299,7 @@ impl Store {
                 pending.push(key_of(uuid));
                 note_latest(latest, stem, fields.end.as_deref());
             }
-            if pending.len() >= CHUNK {
+            if pending.len() >= chunk {
                 set.add(std::mem::take(&mut pending))?;
             }
             Ok(())

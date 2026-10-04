@@ -674,6 +674,26 @@ fn a_big_file_added_by_hand_is_merged_into_the_sorted_file_once_per_uuid() {
 }
 
 #[test]
+fn a_catch_up_merges_a_chunk_at_a_time_while_it_scans() {
+    let fx = Fixture::new();
+    let mut store = fx.open();
+    commit(&mut store, SAMPLES);
+    let chunk = crate::index::MERGE_AT;
+    let rest = 1_000;
+    let text: String = (0..2 * chunk + rest)
+        .map(|n| format!("{{\"uuid\":\"U{n}\",\"type\":\"bulk\"}}\n"))
+        .collect();
+    fx.seed("bulk", &text);
+
+    store.catch_up("bulk", chunk).unwrap();
+    // Two full chunks reached the sorted file during the scan, so the scan never held more than one.
+    // The rest went through the tail, behind the two keys from SAMPLES.
+    let size = |name: &str| fs::metadata(fx.dirs.index.join(name)).unwrap().len();
+    assert_eq!(size("seen.sorted"), 16 * 2 * chunk as u64);
+    assert_eq!(size("seen.tail"), 16 * (2 + rest) as u64);
+}
+
+#[test]
 fn a_second_store_cannot_use_an_index_that_is_in_use() {
     let fx = Fixture::new();
     let first = fx.open();
