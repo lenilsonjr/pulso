@@ -466,7 +466,6 @@ impl Builder {
         Ok(())
     }
 
-    /// Number of distinct keys.
     fn finish(&mut self) -> Result<usize> {
         self.flush().context(|| "write the uuid index".to_owned())?;
         Ok(self.set.len())

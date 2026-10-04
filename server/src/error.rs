@@ -42,7 +42,6 @@ impl<T> Context<T> for io::Result<T> {
     }
 }
 
-/// Treats "already gone" as success.
 pub fn ignore_not_found(result: io::Result<()>) -> io::Result<()> {
     match result {
         Err(error) if error.kind() != io::ErrorKind::NotFound => Err(error),

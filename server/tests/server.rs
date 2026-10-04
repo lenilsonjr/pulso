@@ -380,8 +380,8 @@ fn gzip(data: &[u8]) -> Vec<u8> {
     encoder.finish().unwrap()
 }
 
-/// Anonymous memory of a process in bytes: `RssAnon` where the kernel has it,
-/// else the sum of the `Anonymous:` lines of smaps (gVisor has no `RssAnon`).
+/// Anonymous memory of a process in bytes: `RssAnon`, or on kernels without it
+/// the sum of the `Anonymous:` lines of smaps.
 fn anonymous_bytes(pid: u32) -> u64 {
     let kib = |text: &str| {
         text.trim()
