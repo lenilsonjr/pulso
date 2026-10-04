@@ -644,6 +644,36 @@ fn a_file_added_by_hand_is_indexed_from_its_start_on_the_next_start() {
 }
 
 #[test]
+fn a_big_file_added_by_hand_is_merged_into_the_sorted_file_once_per_uuid() {
+    let fx = Fixture::new();
+    let mut store = fx.open();
+    commit(&mut store, SAMPLES);
+    drop(store);
+    let count = crate::index::MERGE_AT + 1_000;
+    // The first hundred uuids appear twice.
+    let text: String = (0..count)
+        .chain(0..100)
+        .map(|n| format!("{{\"uuid\":\"U{n}\",\"type\":\"bulk\"}}\n"))
+        .collect();
+    fx.seed("bulk", &text);
+
+    let mut store = fx.open();
+    // The keys went into the sorted file; the two from SAMPLES are still in the tail.
+    let size = |name: &str| fs::metadata(fx.dirs.index.join(name)).unwrap().len();
+    assert_eq!(size("seen.sorted"), 16 * count as u64);
+    assert_eq!(size("seen.tail"), 16 * 2);
+
+    let known = |n: usize| sample(&format!("U{n}"), "x", "2026-07-06T08:00:00Z");
+    let body = format!(
+        "[{},{},{}]",
+        known(0),
+        known(count - 1),
+        sample("NEW", "x", "2026-07-06T08:00:00Z")
+    );
+    assert_eq!(commit(&mut store, &body), (3, 1, 0));
+}
+
+#[test]
 fn a_second_store_cannot_use_an_index_that_is_in_use() {
     let fx = Fixture::new();
     let first = fx.open();

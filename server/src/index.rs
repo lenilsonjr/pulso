@@ -119,8 +119,14 @@ impl KeySet {
         Ok(())
     }
 
-    /// Adds the keys that are not in the set yet.
-    pub fn add(&mut self, candidates: &[Key]) -> io::Result<()> {
+    /// Adds the keys that are not in the set yet. `candidates` may repeat keys.
+    pub fn add(&mut self, mut candidates: Vec<Key>) -> io::Result<()> {
+        if candidates.len() >= self.merge_at {
+            // A merge is due anyway; sorting in place spares a hash set of every candidate.
+            candidates.sort_unstable();
+            candidates.dedup();
+            return self.absorb_sorted(&candidates);
+        }
         let mut seen = HashSet::new();
         let fresh: Vec<Key> = candidates
             .iter()
@@ -187,8 +193,8 @@ impl KeySet {
         Ok(())
     }
 
-    /// Number of keys in the sorted file and the tail; keys present in both
-    /// after an interrupted merge count twice.
+    /// Number of keys in the sorted file and the tail; a key present in both
+    /// counts twice.
     pub fn len(&self) -> usize {
         self.sorted.as_deref().map_or(0, |bytes| bytes.len() / 16) + self.tail.len()
     }
@@ -332,13 +338,39 @@ mod tests {
     fn add_skips_keys_that_are_already_there_and_repeats() {
         let dir = tempfile::tempdir().unwrap();
         let mut set = KeySet::create_empty(dir.path(), "seen").unwrap();
-        set.add(&[key(1), key(1), key(2)]).unwrap();
-        set.add(&[key(2), key(3), key(3)]).unwrap();
+        set.add(vec![key(1), key(1), key(2)]).unwrap();
+        set.add(vec![key(2), key(3), key(3)]).unwrap();
         assert_eq!(set.len(), 3);
         assert_eq!(
             fs::metadata(dir.path().join("seen.tail")).unwrap().len(),
             48
         );
+    }
+
+    #[test]
+    fn a_bulk_add_goes_straight_into_the_sorted_file() {
+        let dir = tempfile::tempdir().unwrap();
+        KeySet::create_empty(dir.path(), "seen").unwrap();
+        let mut set = KeySet::open_with(dir.path(), "seen", 4).unwrap();
+        set.add_new(&[key(1)]).unwrap();
+
+        // Repeats, and key 1, which the tail holds already.
+        set.add([1, 2, 3, 3, 4, 5, 6, 7, 8, 8].map(key).to_vec())
+            .unwrap();
+
+        let merged = sorted_file(dir.path(), "seen");
+        assert_eq!(merged.len(), 8);
+        assert!(merged.windows(2).all(|pair| pair[0] < pair[1]));
+        assert!((1..=8).all(|n| set.contains(&key(n))) && !set.contains(&key(9)));
+        assert_eq!(set.tail.len(), 1, "the candidates must not enter the tail");
+        assert_eq!(
+            fs::metadata(dir.path().join("seen.tail")).unwrap().len(),
+            16
+        );
+        drop(set);
+
+        let set = KeySet::open_with(dir.path(), "seen", 4).unwrap();
+        assert!((1..=8).all(|n| set.contains(&key(n))) && !set.contains(&key(9)));
     }
 
     #[test]

@@ -300,13 +300,12 @@ impl Store {
                 note_latest(latest, stem, fields.end.as_deref());
             }
             if pending.len() >= CHUNK {
-                set.add(&pending)?;
-                pending.clear();
+                set.add(std::mem::take(&mut pending))?;
             }
             Ok(())
         })
         .context(|| format!("index {}", path.display()))?;
-        set.add(&pending)
+        set.add(pending)
             .context(|| format!("index {}", path.display()))?;
         self.covered.insert(stem.to_owned(), to);
         Ok(())
