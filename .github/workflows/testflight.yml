@@ -1,0 +1,94 @@
+# Signed internal TestFlight delivery for iOS.
+#
+#   push a v* tag     → lane release → TestFlight, marketing version = the tag
+#   manual (Actions)  → lane beta    → TestFlight, auto build number
+#
+# TestFlight is release-gated: a build ships only when you cut a v* tag, so every TestFlight build is
+# a deliberate, changelog-able release. Pushes and pull requests run only ci.yml.
+#
+# Required repo secrets (scripts/setup-secrets.sh sets them):
+#   ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_CONTENT (base64 of the .p8 — upload rights suffice), APPLE_TEAM_ID
+#   B2_SIGNING_KEY_ID, B2_SIGNING_APP_KEY (a READ-ONLY key scoped to one bucket), B2_SIGNING_ENDPOINT,
+#   B2_SIGNING_BUCKET, SIGNING_PASSPHRASE (decrypts the signing bundle and its .p12)
+#
+# Signing: the bundle holds one shared Apple Distribution certificate and this app's App Store profile;
+# fastlane imports it into a throwaway keychain and signs manually, so a fresh runner never mints a
+# certificate (see fastlane/Fastfile). scripts/bootstrap-signing.py made the bundle.
+name: TestFlight
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: testflight-${{ github.ref }}
+  cancel-in-progress: false   # never cancel a half-finished upload
+
+permissions:
+  contents: read
+
+jobs:
+  testflight:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Resolve lane + marketing version
+        id: plan
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            echo "lane=release" >> "$GITHUB_OUTPUT"
+            echo "marketing=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "lane=beta" >> "$GITHUB_OUTPUT"
+            echo "marketing=" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Pull the encrypted signing bundle with a READ-ONLY, single-bucket key and decrypt it into a
+      # temp dir. Two objects: team/certs.tar.enc (shared certificates) and pulso/profiles.tar.enc
+      # (this app's App Store profile). The listing prints file names only.
+      - name: Fetch signing bundle (read-only object-storage key)
+        env:
+          AWS_ACCESS_KEY_ID:     ${{ secrets.B2_SIGNING_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_SIGNING_APP_KEY }}
+          ENDPOINT:              ${{ secrets.B2_SIGNING_ENDPOINT }}
+          BUCKET:                ${{ secrets.B2_SIGNING_BUCKET }}
+          SIGNING_PASSPHRASE:    ${{ secrets.SIGNING_PASSPHRASE }}
+          # S3-compatible stores have rejected the CLI's newer default checksum headers; send them
+          # only when an operation requires them.
+          AWS_REQUEST_CHECKSUM_CALCULATION:   when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION:   when_required
+        run: |
+          set -euo pipefail
+          command -v aws >/dev/null || brew install awscli
+          REGION="${ENDPOINT#s3.}"; REGION="${REGION%%.*}"        # s3.<region>.<host> → <region>
+          DIR="$RUNNER_TEMP/signing"; mkdir -p "$DIR"
+          for key in "team/certs.tar.enc" "pulso/profiles.tar.enc"; do
+            aws s3 cp "s3://${BUCKET}/${key}" "$DIR/blob.enc" \
+              --endpoint-url "https://${ENDPOINT}" --region "$REGION" --only-show-errors
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in "$DIR/blob.enc" \
+              -pass env:SIGNING_PASSPHRASE | tar -x -C "$DIR"
+            rm -f "$DIR/blob.enc"
+          done
+          find "$DIR" -type f | sed "s|$DIR/|  |"
+          echo "SIGNING_DIR=$DIR" >> "$GITHUB_ENV"
+
+      - name: Set up Ruby + fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+
+      - name: Deliver to TestFlight
+        env:
+          ASC_KEY_ID:            ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID:         ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT:       ${{ secrets.ASC_KEY_CONTENT }}
+          APPLE_TEAM_ID:         ${{ secrets.APPLE_TEAM_ID }}
+          APP_BUNDLE_ID:         pulso.efficiency.ventures      # as in Pulso.xcodeproj
+          APP_MARKETING_VERSION: ${{ steps.plan.outputs.marketing }}
+          APP_CHANGELOG:         "Build from ${{ github.ref_name }} @ ${{ github.sha }}"
+          SIGNING_PASSPHRASE:    ${{ secrets.SIGNING_PASSPHRASE }}   # SIGNING_DIR comes from the fetch step
+        run: bundle exec fastlane ios ${{ steps.plan.outputs.lane }}

@@ -482,6 +482,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Pulso/Info.plist;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Pulso reads the health data you select and sends it only to the server you configure.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Pulso does not write to Health; this permission is unused.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -491,7 +493,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.lenilson.pulso;
+				PRODUCT_BUNDLE_IDENTIFIER = pulso.efficiency.ventures;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -509,6 +511,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Pulso/Info.plist;
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "Pulso reads the health data you select and sends it only to the server you configure.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Pulso does not write to Health; this permission is unused.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -518,7 +522,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 0.1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.lenilson.pulso;
+				PRODUCT_BUNDLE_IDENTIFIER = pulso.efficiency.ventures;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

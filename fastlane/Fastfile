@@ -1,0 +1,107 @@
+# TestFlight delivery for Pulso (iOS).
+#
+# Signing is MANUAL with one shared Apple Distribution certificate and one App Store profile. CI
+# fetches them as an encrypted bundle into SIGNING_DIR (see .github/workflows/testflight.yml) and
+# prepare_signing imports them into a throwaway keychain, so a fresh runner never asks Apple for a
+# certificate. The App Store Connect API key is used for the upload and the build-number lookup only;
+# the archive runs without portal access at all.
+#
+# Delivery relies on an internal beta group created with hasAccessToAllBuilds=true, so every processed
+# build is auto-available to internal testers and the lane never submits for external review.
+#
+#   fastlane ios beta      manual run → TestFlight, auto build number
+#   fastlane ios release   tag v*     → TestFlight, marketing version from the tag
+
+default_platform(:ios)
+
+APP_IDENTIFIER = ENV.fetch("APP_BUNDLE_ID")
+TEAM_ID        = ENV.fetch("APPLE_TEAM_ID")
+PROJECT        = "Pulso.xcodeproj"
+SCHEME         = "Pulso"
+PROFILE_NAME   = "Pulso iOS App Store"   # exactly as scripts/bootstrap-signing.py created it
+
+def asc_login
+  app_store_connect_api_key(
+    key_id:                ENV.fetch("ASC_KEY_ID"),
+    issuer_id:             ENV.fetch("ASC_ISSUER_ID"),
+    key_content:           ENV.fetch("ASC_KEY_CONTENT"),
+    is_key_content_base64: true,
+    in_house:              false
+  )
+end
+
+# Import the shared signing bundle into a throwaway keychain. Fails loudly outside CI: these lanes
+# must not sign with whatever happens to be in a developer's login keychain.
+def prepare_signing
+  dir = ENV["SIGNING_DIR"].to_s
+  UI.user_error!("SIGNING_DIR is not set — run from CI, which fetches the signing bundle first") if dir.empty?
+  pw = ENV.fetch("SIGNING_PASSPHRASE")
+
+  setup_ci(force: true)                       # throwaway keychain, made the default for this job
+  kc  = ENV.fetch("MATCH_KEYCHAIN_NAME")
+  kpw = ENV.fetch("MATCH_KEYCHAIN_PASSWORD")
+
+  # Apple's WWDR intermediate(s) first, so the leaf certificate chains and codesign trusts it.
+  Dir["#{dir}/certs/*.cer"].sort.each do |cer|
+    import_certificate(certificate_path: cer, keychain_name: kc, keychain_password: kpw)
+  end
+  p12s = Dir["#{dir}/certs/*.p12"].sort
+  UI.user_error!("no .p12 in #{dir}/certs") if p12s.empty?
+  p12s.each do |p12|
+    import_certificate(certificate_path: p12, certificate_password: pw, keychain_name: kc, keychain_password: kpw)
+  end
+
+  profiles = Dir["#{dir}/profiles/*.mobileprovision"].sort
+  UI.user_error!("no profiles in #{dir}/profiles") if profiles.empty?
+  profiles.each { |p| install_provisioning_profile(path: p) }
+end
+
+# Everything signing-related goes on the command line, which outranks the project's own settings
+# (the committed project says CODE_SIGN_STYLE = Automatic for local Xcode work). The app is the only
+# signed target in the archive and the project has no package resource bundles, so the profile can go
+# here too. Deliberately no -allowProvisioningUpdates and no portal auth: nothing may be minted.
+def build_xcargs(next_build)
+  a = ["CURRENT_PROJECT_VERSION=#{next_build}", "DEVELOPMENT_TEAM=#{TEAM_ID}",
+       "CODE_SIGN_STYLE=Manual", %(CODE_SIGN_IDENTITY="Apple Distribution"),
+       %(PROVISIONING_PROFILE_SPECIFIER="#{PROFILE_NAME}")]
+  a << "MARKETING_VERSION=#{ENV['APP_MARKETING_VERSION']}" unless ENV["APP_MARKETING_VERSION"].to_s.empty?
+  a.join(" ")
+end
+
+platform :ios do
+  before_all { asc_login; prepare_signing }
+
+  desc "manual run → TestFlight (auto build number)"
+  lane(:beta)    { deliver_build(ENV["APP_CHANGELOG"] || "Automated build.") }
+  desc "tag v* → TestFlight (marketing version from the tag)"
+  lane(:release) { deliver_build(ENV["APP_CHANGELOG"] || "Tagged release build.") }
+
+  def deliver_build(changelog)
+    # Next build number = highest build already on TestFlight + 1 (floor 0 → build 1), so
+    # CFBundleVersion is unique and monotonic across runs. A failed lookup is loud, not silent.
+    next_build = (latest_testflight_build_number(app_identifier: APP_IDENTIFIER) || 0).to_i + 1
+    gym(
+      project:          PROJECT,
+      scheme:           SCHEME,
+      configuration:    "Release",
+      export_method:    "app-store",
+      export_options:   {
+        signingStyle:         "manual",
+        teamID:               TEAM_ID,
+        signingCertificate:   "Apple Distribution",
+        provisioningProfiles: { APP_IDENTIFIER => PROFILE_NAME }
+      },
+      xcargs:           build_xcargs(next_build),
+      output_directory: "build",
+      output_name:      "Pulso.ipa",
+      clean:            true
+    )
+    upload_to_testflight(
+      app_identifier:                    APP_IDENTIFIER,
+      distribute_external:               false,
+      skip_submission:                   true,     # group's hasAccessToAllBuilds auto-delivers
+      changelog:                         changelog,
+      skip_waiting_for_build_processing: false
+    )
+  end
+end
