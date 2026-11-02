@@ -12,3 +12,15 @@ server/data/
 
 # Rust
 target/
+
+# Signing material must never be committed; CI pulls it from the encrypted bundle at run time.
+*.p12
+*.mobileprovision
+*.provisionprofile
+signing/
+__pycache__/
+
+# fastlane writes these on every local run; CI resolves gems fresh from the Gemfile
+fastlane/README.md
+fastlane/report.xml
+Gemfile.lock

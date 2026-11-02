@@ -1,0 +1,2 @@
+# App identity for the TestFlight lanes. Account auth is the App Store Connect API key (see Fastfile).
+app_identifier(ENV["APP_BUNDLE_ID"])
